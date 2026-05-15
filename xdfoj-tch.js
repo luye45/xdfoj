@@ -2977,14 +2977,64 @@
         loadPublicCategoriesInto(catSel);
     }
 
-    async function doSyncFromSource(type, itemId, gid, syncMode) {
-        setStatus('加载源题单...');
-        out('正在加载源题单...', 'run');
+async function doSyncFromSource(type, itemId, gid, syncMode) {
+    setStatus('加载源题单...');
+    out('正在加载源题单...', 'run');
 
-        try {
-            var sourceProblems = [];
+    // ── 权限验证（与加载题单逻辑一致）──
+    try {
+        if (type === 'group-training') {
+            if (gid) {
+                var groupOk = await checkGroupAccess(gid);
+                if (!groupOk) { out('暂未加入该团队，无法读取题单', 'err'); setStatus('无权限'); return; }
+            }
+            var trainOk = await checkTrainingAccess(itemId);
+            if (!trainOk) {
+                var needPwd = false;
+                try {
+                    var infoR = await req('/api/oj/get-training-problem-list?tid=' + encodeURIComponent(itemId));
+                    var auth = infoR && infoR.data && infoR.data.training && infoR.data.training.auth;
+                    needPwd = (auth === 'Private');
+                } catch (e) {
+                    needPwd = true;
+                }
+                if (needPwd) {
+                    while (true) {
+                        var pwd = await promptPassword('训练需要密码', '训练 #' + itemId);
+                        if (pwd === null) { out('已取消', 'err'); setStatus('已取消'); return; }
+                        try { await registerTraining(itemId, pwd); break; }
+                        catch (e) { out('密码错误或验证失败，请重试', 'err'); }
+                    }
+                } else {
+                    try { await registerTraining(itemId, ''); } catch (e) { }
+                }
+            }
+        } else if (type === 'group-contest') {
+            if (gid) {
+                var groupOk2 = await checkGroupAccess(gid);
+                if (!groupOk2) { out('暂未加入该团队，无法读取比赛', 'err'); setStatus('无权限'); return; }
+            }
+            var contestOk = await checkContestAccess(itemId);
+            if (!contestOk) {
+                while (true) {
+                    var pwd2 = await promptPassword('比赛需要密码', '比赛 #' + itemId);
+                    if (pwd2 === null) { out('已取消', 'err'); setStatus('已取消'); return; }
+                    try { await registerContest(itemId, pwd2); break; }
+                    catch (e) { out('密码错误或验证失败，请重试', 'err'); }
+                }
+            }
+        }
+        // public-training 无需权限验证
+    } catch (e) {
+        out('权限验证失败: ' + e.message, 'err');
+        setStatus('验证失败');
+        return;
+    }
 
-            if (type === 'public-training') {
+    try {
+        var sourceProblems = [];
+
+        if (type === 'public-training') {
                 var r = await req('/api/oj/get-training-problem-list?tid=' + encodeURIComponent(itemId) + '&limit=1000&currentPage=1');
                 var d = r && r.data;
                 if (d && d.problemList && Array.isArray(d.problemList.records)) sourceProblems = d.problemList.records;
