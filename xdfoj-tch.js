@@ -2944,7 +2944,7 @@
                 groupWrap.style.display = 'none';
                 itemLabel.textContent = '选择训练：';
                 itemSel.innerHTML = '<option value="">请先选择分类</option>';
-                loadPublicCategoriesInto(catSel);
+                loadPublicCategoriesInto(catSel,itemSel);
             } else {
                 catWrap.style.display = 'none';
                 groupWrap.style.display = '';
@@ -2977,296 +2977,110 @@
         loadPublicCategoriesInto(catSel);
     }
 
-async function doSyncFromSource(type, itemId, gid, syncMode) {
-    if (!token()) { alert('请先登录'); return; }
+    async function doSyncFromSource(type, itemId, gid, syncMode) {
+        setStatus('加载源题单...');
+        out('正在加载源题单...', 'run');
 
-    // 必须有已加载的题单才能同步到
-    if (!problemListState.mode) {
-        out('请先加载目标题单后再同步', 'err');
-        return;
-    }
+        try {
+            var sourceProblems = [];
 
-    setStatus('加载源题单...');
-    out('正在加载源题单...', 'run');
-
-    try {
-        var sourceProblems = [];
-
-        // ── 权限检查 ──
-        if (gid) {
-            var groupOk = await checkGroupAccess(gid);
-            if (!groupOk) { out('暂未加入该团队，无法读取题单', 'err'); setStatus('无权限'); return; }
-        }
-        if (type === 'group-training') {
-            var trainOk = await checkTrainingAccess(itemId);
-            if (!trainOk) {
-                while (true) {
-                    var pwd = await promptPassword('训练需要密码', '训练 #' + itemId);
-                    if (pwd === null) { out('已取消', 'err'); return; }
-                    try { await registerTraining(itemId, pwd); break; }
-                    catch (e) { out('密码错误或验证失败，请重试', 'err'); }
-                }
-            }
-        }
-        if (type === 'group-contest') {
-            var contestOk = await checkContestAccess(itemId);
-            if (!contestOk) {
-                while (true) {
-                    var pwd2 = await promptPassword('比赛需要密码', '比赛 #' + itemId);
-                    if (pwd2 === null) { out('已取消', 'err'); return; }
-                    try { await registerContest(itemId, pwd2); break; }
-                    catch (e) { out('密码错误或验证失败，请重试', 'err'); }
-                }
-            }
-        }
-
-        // ── 加载源题目 ──
-        if (type === 'public-training') {
-            var r = await req('/api/oj/get-training-problem-list?tid=' + encodeURIComponent(itemId) + '&limit=1000&currentPage=1');
-            var d = r && r.data;
-            if (d && d.problemList && Array.isArray(d.problemList.records)) sourceProblems = d.problemList.records;
-            else if (d && Array.isArray(d.records)) sourceProblems = d.records;
-            else if (Array.isArray(d)) sourceProblems = d;
-            else if (d && d.trainingProblemMap) {
-                sourceProblems = Object.keys(d.trainingProblemMap).map(function (k) {
-                    var m = d.trainingProblemMap[k];
-                    return { displayId: m.displayId || k, title: m.title || m.displayTitle || '', problemName: m.title || m.displayTitle || '', pid: m.pid || m.problemId || k, problemId: m.problemId || m.pid || k };
-                });
-            }
-        } else if (type === 'group-training') {
-            var r2 = await req('/api/oj/group/get-training-problem-list?tid=' + encodeURIComponent(itemId) + '&limit=1000&currentPage=1');
-            var d2 = r2 && r2.data;
-            if (d2 && d2.problemList && Array.isArray(d2.problemList.records)) sourceProblems = d2.problemList.records;
-            else if (d2 && Array.isArray(d2.records)) sourceProblems = d2.records;
-            else if (Array.isArray(d2)) sourceProblems = d2;
-            else if (d2 && d2.trainingProblemMap) {
-                sourceProblems = Object.keys(d2.trainingProblemMap).map(function (k) {
-                    var m2 = d2.trainingProblemMap[k];
-                    return { displayId: m2.displayId || k, title: m2.title || m2.displayTitle || '', problemName: m2.title || m2.displayTitle || '', pid: m2.pid || m2.problemId || k, problemId: m2.problemId || m2.pid || k };
-                });
-            }
-            if (!sourceProblems.length) {
-                var r2b = await req('/api/oj/get-training-problem-list?tid=' + encodeURIComponent(itemId) + '&limit=1000&currentPage=1');
-                var d2b = r2b && r2b.data;
-                if (d2b && d2.problemList && Array.isArray(d2b.problemList.records)) sourceProblems = d2b.problemList.records;
-                else if (d2b && Array.isArray(d2b.records)) sourceProblems = d2b.records;
-                else if (Array.isArray(d2b)) sourceProblems = d2b;
-            }
-        } else if (type === 'group-contest') {
-            var mapR = await req('/api/oj/group/get-contest-problem-list?cid=' + encodeURIComponent(itemId));
-            if (mapR && mapR.data && mapR.data.contestProblemMap) {
-                var cm = mapR.data.contestProblemMap;
-                // 先建立 pid -> problemId 映射
-                var cProblemIdMap = {};
-                var cPlRecords = mapR.data.problemList && mapR.data.problemList.records;
-                if (Array.isArray(cPlRecords)) {
-                    cPlRecords.forEach(function (x) {
-                        if (x.id != null && x.problemId) cProblemIdMap[String(x.id)] = x.problemId;
+            if (type === 'public-training') {
+                var r = await req('/api/oj/get-training-problem-list?tid=' + encodeURIComponent(itemId) + '&limit=1000&currentPage=1');
+                var d = r && r.data;
+                if (d && d.problemList && Array.isArray(d.problemList.records)) sourceProblems = d.problemList.records;
+                else if (d && Array.isArray(d.records)) sourceProblems = d.records;
+                else if (Array.isArray(d)) sourceProblems = d;
+                else if (d && d.trainingProblemMap) {
+                    sourceProblems = Object.keys(d.trainingProblemMap).map(function (k) {
+                        var m = d.trainingProblemMap[k];
+                        return { displayId: m.displayId || k, title: m.title || m.displayTitle || '', problemName: m.title || m.displayTitle || '', pid: m.pid || m.problemId || k, problemId: m.problemId || m.pid || k };
                     });
                 }
-                sourceProblems = Object.keys(cm).map(function (k) {
-                    var item = cm[k];
-                    var pidVal = item.pid ?? item.problemId ?? k;
-                    if (cProblemIdMap[String(pidVal)]) item.problemId = cProblemIdMap[String(pidVal)];
-                    return {
-                        pid: pidVal,
-                        problemId: item.problemId ?? item.pid ?? k,
-                        displayId: item.displayId || '',
-                        title: item.displayTitle || item.title || item.problemName || '',
-                        displayTitle: item.displayTitle || item.title || '',
-                        problemName: item.problemName || item.title || ''
-                    };
-                });
-            } else {
-                var cr = await req('/api/oj/get-contest-problem?cid=' + encodeURIComponent(itemId));
-                var cd = cr && cr.data;
-                if (Array.isArray(cd)) sourceProblems = cd;
-                else if (cd && Array.isArray(cd.records)) sourceProblems = cd.records;
+            } else if (type === 'group-training') {
+                var r2 = await req('/api/oj/get-training-problem-list?tid=' + encodeURIComponent(itemId) + '&limit=1000&currentPage=1');
+                var d2 = r2 && r2.data;
+                if (d2 && d2.problemList && Array.isArray(d2.problemList.records)) sourceProblems = d2.problemList.records;
+                else if (d2 && Array.isArray(d2.records)) sourceProblems = d2.records;
+                else if (Array.isArray(d2)) sourceProblems = d2;
+                else if (d2 && d2.trainingProblemMap) {
+                    sourceProblems = Object.keys(d2.trainingProblemMap).map(function (k) {
+                        var m2 = d2.trainingProblemMap[k];
+                        return { displayId: m2.displayId || k, title: m2.title || m2.displayTitle || '', problemName: m2.title || m2.displayTitle || '', pid: m2.pid || m2.problemId || k, problemId: m2.problemId || m2.pid || k };
+                    });
+                }
+                if (!sourceProblems.length) {
+                    // 降级
+                    var r2b = await req('/api/oj/get-training-problem-list?tid=' + encodeURIComponent(itemId) + '&limit=1000&currentPage=1');
+                    var d2b = r2b && r2b.data;
+                    if (d2b && d2b.problemList && Array.isArray(d2b.problemList.records)) sourceProblems = d2b.problemList.records;
+                    else if (d2b && Array.isArray(d2b.records)) sourceProblems = d2b.records;
+                    else if (Array.isArray(d2b)) sourceProblems = d2b;
+                }
+            } else if (type === 'group-contest') {
+                // 复用已有的比赛题目加载逻辑
+                var mapR = await req('/api/oj/group/get-contest-problem-list?cid=' + encodeURIComponent(itemId));
+                if (mapR && mapR.data && mapR.data.contestProblemMap) {
+                    var cm = mapR.data.contestProblemMap;
+                    sourceProblems = Object.keys(cm).map(function (k) {
+                        var item = cm[k];
+                        return {
+                            pid: item.pid ?? item.problemId ?? k,
+                            problemId: item.problemId ?? item.pid ?? k,
+                            displayId: item.displayId || '',
+                            title: item.displayTitle || item.title || item.problemName || '',
+                            displayTitle: item.displayTitle || item.title || '',
+                            problemName: item.problemName || item.title || ''
+                        };
+                    });
+                } else {
+                    var cr = await req('/api/oj/get-contest-problem?cid=' + encodeURIComponent(itemId));
+                    var cd = cr && cr.data;
+                    if (Array.isArray(cd)) sourceProblems = cd;
+                    else if (cd && Array.isArray(cd.records)) sourceProblems = cd.records;
+                }
+                // 按字母序排
+                var ltn = function (s) {
+                    s = String(s || '').trim().toUpperCase();
+                    if (!/^[A-Z]+$/.test(s)) return 1e9;
+                    var n = 0; for (var i = 0; i < s.length; i++) n = n * 26 + (s.charCodeAt(i) - 64); return n;
+                };
+                sourceProblems.sort(function (a, b) { return ltn(a.displayId) - ltn(b.displayId); });
             }
-            var ltn = function (s) {
-                s = String(s || '').trim().toUpperCase();
-                if (!/^[A-Z]+$/.test(s)) return 1e9;
-                var n = 0; for (var i = 0; i < s.length; i++) n = n * 26 + (s.charCodeAt(i) - 64); return n;
-            };
-            sourceProblems.sort(function (a, b) { return ltn(a.displayId) - ltn(b.displayId); });
-        }
 
-        if (!sourceProblems.length) {
-            out('源题单无题目', 'err');
-            setStatus('同步完成（无题目）');
-            return;
-        }
-
-        // ── 确定同步范围 ──
-        var toSync = sourceProblems;
-        if (syncMode === 'append') {
-            // 追加模式：过滤掉已存在的题目
-            var existingPids = new Set(editList.map(ppv));
-            toSync = sourceProblems.filter(function (p) { return !existingPids.has(ppv(p)); });
-            if (!toSync.length) {
-                out('源题单中所有题目已存在于编辑列表', 'ok');
-                setStatus('无需同步');
+            if (!sourceProblems.length) {
+                out('源题单无题目', 'err');
+                setStatus('同步完成（无题目）');
                 return;
             }
-        }
 
-        // ── 确认操作 ──
-        var actionLabel = syncMode === 'overwrite' ? '覆盖同步' : '追加同步';
-        if (!confirm('确定' + actionLabel + ' ' + toSync.length + ' 道题目到当前' + (problemListState.mode === 'contest' ? '比赛' : '题单') + '吗？')) return;
+            // 去重辅助
+            var existingPids = new Set(editList.map(ppv));
 
-        // ── 直接提交到服务器 ──
-        setBusy(true);
-        var ok = 0, bad = [];
-        try {
-            for (var i = 0; i < toSync.length; i++) {
-                var p = toSync[i];
-                setStatus('同步 ' + (i + 1) + '/' + toSync.length + '：' + sid(p));
-                out('同步 ' + (i + 1) + '/' + toSync.length + '：' + sid(p), 'run');
-                try {
-                    if (problemListState.mode === 'contest') {
-                        // 同步到比赛：自动分配字母编号
-                        await retryReq(function () {
-                            return addContestProblemAutoDisplay(p);
-                        });
-                    } else {
-                        // 同步到训练
-                        // 关键修复：比赛来源的 displayId 需要用数字 pid，而不是字母编号
-                        var trainingDisplayId = (type === 'group-contest')
-                            ? String(p.problemId ?? ppv(p))
-                            : sid(p);
-
-                        await retryReq(function () {
-                            return req('/api/oj/group/add-training-problem-from-public', 'POST', {
-                                pid: parseInt(ppv(p), 10),
-                                tid: parseInt(problemListState.tid, 10),
-                                displayId: trainingDisplayId
-                            });
-                        });
-                    }
-                    ok++;
-                } catch (e) {
-                    bad.push({ id: sid(p), reason: e.message || '未知错误' });
-                }
-                await sleep(300);
-            }
-
-            // ── 覆盖模式：删除源题单中不存在的旧题目 ──
-            if (syncMode === 'overwrite' && problemListState.mode === 'training') {
-                var newPids = new Set(sourceProblems.map(ppv));
-                for (var j = 0; j < problemListState.problems.length; j++) {
-                    var old = problemListState.problems[j];
-                    if (!newPids.has(ppv(old))) {
-                        setStatus('删除旧题目: ' + sid(old));
-                        try {
-                            await retryReq(function () {
-                                return req('/api/oj/group/training-problem?pid=' + encodeURIComponent(ppv(old)) + '&tid=' + encodeURIComponent(problemListState.tid), 'DELETE');
-                            });
-                            await sleep(300);
-                        } catch (e) {
-                            bad.push({ id: sid(old), reason: '删除失败：' + e.message });
-                        }
+            if (syncMode === 'overwrite') {
+                // 覆盖模式：直接替换
+                editList = sourceProblems.map(function (p) { return Object.assign({}, p); });
+                out('已覆盖为源题单内容: ' + sourceProblems.length + ' 题（需保存生效）', 'ok');
+            } else {
+                // 追加模式：只加不重复的
+                var added = 0;
+                for (var i = 0; i < sourceProblems.length; i++) {
+                    var sp = sourceProblems[i];
+                    if (!existingPids.has(ppv(sp))) {
+                        editList.push(Object.assign({}, sp));
+                        existingPids.add(ppv(sp));
+                        added++;
                     }
                 }
+                out('追加 ' + added + ' 题到编辑列表（需保存生效）', 'ok');
             }
 
-            // ── 同步顺序（回写 rank） ──
-            if (problemListState.mode === 'training' && problemListState.tid) {
-                setStatus('回写题单顺序...');
-                await sleep(1200);
-                var metaMap = new Map();
-                var allFound = false;
-                var successList = sourceProblems.filter(function (p2) { return !bad.some(function (x) { return x.id === sid(p2); }); });
-                for (var round = 0; round < 8; round++) {
-                    var res = await retryReq(function () {
-                        return req('/api/oj/group/get-training-problem-list?tid=' + encodeURIComponent(problemListState.tid) + '&limit=1000&currentPage=1');
-                    });
-                    var rawMap = res && res.data && res.data.trainingProblemMap ? res.data.trainingProblemMap : {};
-                    metaMap = new Map();
-                    Object.keys(rawMap).forEach(function (k) {
-                        var item = rawMap[k];
-                        if (item && item.pid != null) metaMap.set(String(item.pid), item);
-                    });
-                    allFound = successList.every(function (src) { return metaMap.has(ppv(src)); });
-                    if (allFound) break;
-                    await sleep(1000);
-                }
-                if (allFound) {
-                    for (var m = 0; m < successList.length; m++) {
-                        var src = successList[m];
-                        var meta = metaMap.get(ppv(src));
-                        if (!meta) continue;
-                        await retryReq(function () {
-                            return req('/api/oj/group/training-problem', 'PUT', {
-                                id: parseInt(meta.id, 10),
-                                tid: parseInt(meta.tid, 10),
-                                pid: parseInt(meta.pid, 10),
-                                displayId: meta.displayId || sid(src),
-                                rank: m + 1,
-                                gmtCreate: meta.gmtCreate,
-                                gmtModified: meta.gmtModified
-                            });
-                        });
-                        await sleep(200);
-                    }
-                }
-            }
-
-            // ── 重新加载题单 ──
-            if (problemListState.mode === 'training') {
-                await loadProblemListFromTraining(problemListState.tid, problemListState.gid, !!problemListState.gid);
-            } else if (problemListState.mode === 'contest') {
-                await loadProblemListFromContest(problemListState.cid, problemListState.gid);
-            }
-
-            var finalMsg = '同步完成：成功 ' + ok + '，失败 ' + bad.length;
-            out(finalMsg, ok > 0 ? 'ok' : 'err');
+            renderEditMode();
             setStatus('同步完成');
-            if (bad.length) {
-                alert(finalMsg + '\n\n' + bad.slice(0, 10).map(function (x) { return '- ' + x.id + '：' + x.reason; }).join('\n'));
-            }
-        } finally {
-            setBusy(false);
+        } catch (e) {
+            out('同步加载失败: ' + e.message, 'err');
+            setStatus('同步失败');
         }
-    } catch (e) {
-        out('同步加载失败: ' + e.message, 'err');
-        setStatus('同步失败');
     }
-}
-
-// 辅助：比赛题目自动分配字母编号
-async function addContestProblemAutoDisplay(p) {
-    if (!problemListState.cid) throw new Error('未找到当前比赛 cid');
-    // 先获取当前比赛题目列表，确定下一个字母编号
-    var rawMap = await req('/api/oj/group/get-contest-problem-list?cid=' + encodeURIComponent(problemListState.cid));
-    var list = [];
-    if (rawMap && rawMap.data && rawMap.data.contestProblemMap) {
-        list = Object.keys(rawMap.data.contestProblemMap).map(function (k) {
-            return { pid: String(rawMap.data.contestProblemMap[k].pid ?? k), displayId: String(rawMap.data.contestProblemMap[k].displayId || '').toUpperCase() };
-        });
-    }
-    list.sort(function (a, b) {
-        var d = numToLetters(a.displayId) < numToLetters(b.displayId) ? -1 : 1;
-        // 简单排序
-        var na = 1e9, nb = 1e9;
-        if (/^[A-Z]+$/.test(a.displayId)) { na = 0; for (var i = 0; i < a.displayId.length; i++) na = na * 26 + (a.displayId.charCodeAt(i) - 64); }
-        if (/^[A-Z]+$/.test(b.displayId)) { nb = 0; for (var j = 0; j < b.displayId.length; j++) nb = nb * 26 + (b.displayId.charCodeAt(j) - 64); }
-        return na - nb;
-    });
-    var nextDisplayId = numToLetters(list.length + 1);
-    return await req('/api/oj/group/add-contest-problem-from-public', 'POST', {
-        pid: parseInt(ppv(p), 10),
-        cid: parseInt(problemListState.cid, 10),
-        displayId: nextDisplayId
-    });
-}
-
-// 辅助：字母编号
-function numToLetters(n) {
-    var s = ''; n = parseInt(n, 10);
-    while (n > 0) { n--; s = String.fromCharCode(65 + (n % 26)) + s; n = Math.floor(n / 26); }
-    return s || 'A';
-}
-
 
 
     function renderProblemListHighlight() {
@@ -4141,8 +3955,8 @@ function numToLetters(n) {
         }
     }
     // --- 加载公共训练分类 ---
+    // --- 加载公共训练分类 ---
     async function loadPublicCategoriesInto(catSel, itemSelOverride) {
-
         catSel.innerHTML = '<option value="">加载中...</option>';
         try {
             var r = await req('/api/oj/get-training-category');
@@ -4150,12 +3964,17 @@ function numToLetters(n) {
             var arr = [];
             if (Array.isArray(d)) arr = d;
             else if (d && Array.isArray(d.records)) arr = d.records;
+
+            // 关键修复点 1：定义当前要操作的 item 选择器（优先使用传入的 Override）
+            var currentItemSel = itemSelOverride || document.querySelector('#dev-pl-item') || document.querySelector('#dev-loader-item');
+
             if (!arr.length) {
                 // 分类接口无数据，直接降级加载全部
                 catSel.innerHTML = '<option value="">全部</option>';
-                loadPublicTrainingsInto(itemSelOverride ||$('#dev-pl-item'), '');
+                if (currentItemSel) loadPublicTrainingsInto(currentItemSel, '');
                 return;
             }
+            
             var html = '<option value="">-- 请选择分类 --</option>'
                 + '<option value="">全部</option>';
             for (var i = 0; i < arr.length; i++) {
@@ -4167,11 +3986,15 @@ function numToLetters(n) {
         } catch (e) {
             // 分类加载失败，降级为直接加载全部训练
             catSel.innerHTML = '<option value="">全部（分类加载失败）</option>';
-            var itemSel = itemSelOverride || document.querySelector('#dev-pl-item');
-            if (itemSel) loadPublicTrainingsInto(itemSel, '');
+            
+            // 关键修复点 2：错误处理时也要使用正确的选择器
+            var currentItemSelErr = itemSelOverride || document.querySelector('#dev-pl-item') || document.querySelector('#dev-loader-item');
+            if (currentItemSelErr) loadPublicTrainingsInto(currentItemSelErr, '');
+            
             out('加载训练分类失败: ' + e.message, 'err');
         }
     }
+
 
     // --- 加载公共训练列表 ---
     // --- 加载公共训练列表（按分类） ---
