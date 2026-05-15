@@ -31,7 +31,7 @@
         if (!window.markdownit) return null;
         
         _md = window.markdownit({
-            html: false,
+            html: true,
             xhtmlOut: false,
             breaks: true,
             linkify: false,
