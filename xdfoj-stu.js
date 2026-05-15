@@ -38,24 +38,12 @@
             typographer: false
         });
 
-        // ── 只禁用下划线形式的强调（_ 和 __），保留 * 和 ** ──
-        // 原理：在 emphasis 规则的 tokenize 阶段，跳过以 _ 开头的标记
-        var origEmphasisTokenize = _md.inline.ruler.__rules__
-            .find(function (r) { return r.name === 'emphasis'; });
-
-        if (origEmphasisTokenize) {
-            var origFn = origEmphasisTokenize.fn;
-            origEmphasisTokenize.fn = function (state, silent) {
-                // 如果当前字符是 _ ，直接跳过，不处理
-                if (state.src.charCodeAt(state.pos) === 0x5F /* _ */) {
-                    return false;
-                }
-                return origFn(state, silent);
-            };
-        }
+        // 不禁用 emphasis，* ** _ __ 加粗斜体全部正常
+        // LaTeX 下标中的 _ 已在 renderMarkdown 的占位保护阶段提前抽走，不会冲突
 
         return _md;
     }
+
 
 
     function renderMarkdown(text) {
@@ -321,7 +309,7 @@
     }
 
     loadKatex();
-
+    loadMarkdownIt();
     /* ============== 全局状态 ============== */
     const cfg = {
         codeFont: LS.get('codeFont') || 14,
