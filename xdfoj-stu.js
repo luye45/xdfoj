@@ -38,12 +38,25 @@
             typographer: false
         });
 
-        // 禁用 markdown-it 对 _ 的内联强调解析，避免破坏 LaTeX 下标
-        // 同时禁用 __ 的强调，保留 * 和 ** 的强调语法
-        _md.disable(['emphasis']);
+        // ── 只禁用下划线形式的强调（_ 和 __），保留 * 和 ** ──
+        // 原理：在 emphasis 规则的 tokenize 阶段，跳过以 _ 开头的标记
+        var origEmphasisTokenize = _md.inline.ruler.__rules__
+            .find(function (r) { return r.name === 'emphasis'; });
+
+        if (origEmphasisTokenize) {
+            var origFn = origEmphasisTokenize.fn;
+            origEmphasisTokenize.fn = function (state, silent) {
+                // 如果当前字符是 _ ，直接跳过，不处理
+                if (state.src.charCodeAt(state.pos) === 0x5F /* _ */) {
+                    return false;
+                }
+                return origFn(state, silent);
+            };
+        }
 
         return _md;
     }
+
 
     function renderMarkdown(text) {
         if (text == null || !String(text).trim()) return '';
@@ -1041,7 +1054,7 @@
                     <div class="dev-plist-sidebar-search">
                         <span class="count" id="dev-plist-count" style="color:#888;">未加载题单</span>
                         <span style="flex:1;"></span>
-                        <button id="dev-plist-settings" title="加载题单" style="height:20px;padding:0 5px;background:#ECE9D8;border:1px solid #ACA899;cursor:pointer;font-size:11px;border-radius:2px;flex-shrink:0;">⚙</button>
+                        <button id="dev-plist-settings" title="刷新题单" style="height:20px;padding:0 5px;background:#ECE9D8;border:1px solid #ACA899;cursor:pointer;font-size:11px;border-radius:2px;flex-shrink:0;">⟳</button>
                     </div>
                     <div class="dev-plist-sidebar-empty">展开上方加载器加载题单</div>
                     </div>
@@ -2021,13 +2034,13 @@
             var hasLoaded = !!problemListState.mode;
             var countText = hasLoaded ? '题单为空' : '未加载题单';
             var hintText = hasLoaded
-                ? '当前题单没有题目，点击 ✏ 编辑或 ⚙ 刷新'
+                ? '当前题单没有题目，点击 ✏ 编辑或 ⟳ 刷新'
                 : '展开上方加载器加载题单';
             el.innerHTML = '<div class="dev-plist-sidebar-search">'
                 + '<span class="count" id="dev-plist-count" style="color:#888;">' + countText + '</span>'
                 + '<span style="flex:1;"></span>'
                 + (hasLoaded ? '<button id="dev-plist-edit" title="编辑题单" style="height:20px;padding:0 5px;background:#ECE9D8;border:1px solid #ACA899;cursor:pointer;font-size:11px;border-radius:2px;flex-shrink:0;">✏</button>' : '')
-                + (hasLoaded ? '<button id="dev-plist-settings" title="刷新题单" style="height:20px;padding:0 5px;background:#ECE9D8;border:1px solid #ACA899;cursor:pointer;font-size:11px;border-radius:2px;flex-shrink:0;">⚙</button>' : '')
+                + (hasLoaded ? '<button id="dev-plist-settings" title="刷新题单" style="height:20px;padding:0 5px;background:#ECE9D8;border:1px solid #ACA899;cursor:pointer;font-size:11px;border-radius:2px;flex-shrink:0;">⟳</button>' : '')
                 + '</div>'
                 + '<div class="dev-plist-sidebar-empty">' + hintText + '</div>';
             var settingsBtn = $('#dev-plist-settings');
@@ -2067,7 +2080,7 @@
 
         // 绑定刷新按钮
         // 绑定设置按钮（加载题单）
-                var settingsBtn = $('#dev-plist-settings');
+        var settingsBtn = $('#dev-plist-settings');
         if (settingsBtn) {
             settingsBtn.onclick = function () {
                 var mode = problemListState.mode;
@@ -4419,17 +4432,17 @@
             loadProblemListFromContest(problemListState.cid, problemListState.gid);
         }
     };
-        // ============== 题单侧栏常驻加载器（学生版）==============
+    // ============== 题单侧栏常驻加载器（学生版）==============
     (function initPlistLoader() {
-        var loaderEl   = $('#dev-plist-loader');
-        var toggleBtn  = $('#dev-loader-toggle');
-        var typeSel    = $('#dev-loader-type');
-        var groupRow   = $('#dev-loader-group-row');
-        var catRow     = $('#dev-loader-cat-row');
-        var groupSel   = $('#dev-loader-group');
-        var catSel     = $('#dev-loader-cat');
-        var itemSel    = $('#dev-loader-item');
-        var loadBtn    = $('#dev-loader-load');
+        var loaderEl = $('#dev-plist-loader');
+        var toggleBtn = $('#dev-loader-toggle');
+        var typeSel = $('#dev-loader-type');
+        var groupRow = $('#dev-loader-group-row');
+        var catRow = $('#dev-loader-cat-row');
+        var groupSel = $('#dev-loader-group');
+        var catSel = $('#dev-loader-cat');
+        var itemSel = $('#dev-loader-item');
+        var loadBtn = $('#dev-loader-load');
         if (!loaderEl || !typeSel) return;
 
         // 折叠/展开
@@ -4476,7 +4489,7 @@
         loadBtn.onclick = function () {
             if (!token()) { out('请先登录后再加载题单', 'err'); return; }
             var type = typeSel.value;
-            var gid  = groupSel.value;
+            var gid = groupSel.value;
             var item = itemSel.value;
             if (type !== 'public-training' && !gid) { out('请先选择团队', 'err'); return; }
             if (!item) { out('请先选择题单', 'err'); return; }

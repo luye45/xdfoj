@@ -38,13 +38,25 @@
             typographer: false
         });
 
+        // ── 只禁用下划线形式的强调（_ 和 __），保留 * 和 ** ──
+        // 原理：在 emphasis 规则的 tokenize 阶段，跳过以 _ 开头的标记
+        var origEmphasisTokenize = _md.inline.ruler.__rules__
+            .find(function(r){ return r.name === 'emphasis'; });
 
-        // 禁用 markdown-it 对 _ 的内联强调解析，避免破坏 LaTeX 下标
-        // 同时禁用 __ 的强调，保留 * 和 ** 的强调语法
-        _md.disable(['emphasis']);
+        if (origEmphasisTokenize) {
+            var origFn = origEmphasisTokenize.fn;
+            origEmphasisTokenize.fn = function(state, silent) {
+                // 如果当前字符是 _ ，直接跳过，不处理
+                if (state.src.charCodeAt(state.pos) === 0x5F /* _ */) {
+                    return false;
+                }
+                return origFn(state, silent);
+            };
+        }
 
         return _md;
     }
+
 
     function renderMarkdown(text) {
         if (text == null || !String(text).trim()) return '';
