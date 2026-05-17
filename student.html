@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XDFOJ 学生端 - DevC++ 在线学习工具</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: "Microsoft YaHei", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-width: 600px;
+      width: 100%;
+      overflow: hidden;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #0058E1 0%, #3A93FF 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+    
+    .header h1 .icon {
+      font-size: 36px;
+    }
+    
+    .header p {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    
+    .content {
+      padding: 30px;
+    }
+    
+    .section {
+      margin-bottom: 24px;
+    }
+    
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .section-title::before {
+      content: '';
+      width: 4px;
+      height: 16px;
+      background: linear-gradient(180deg, #0058E1, #3A93FF);
+      border-radius: 2px;
+    }
+    
+    .install-box {
+      background: #F5F5DC;
+      border: 1px solid #ACA899;
+      border-radius: 8px;
+      padding: 20px;
+    }
+    
+    .install-box h3 {
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 12px;
+    }
+    
+    .bookmarklet {
+      display: inline-block;
+      background: linear-gradient(135deg, #0A8043 0%, #0DAA56 100%);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: grab;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(10, 128, 67, 0.3);
+    }
+    
+    .bookmarklet:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(10, 128, 67, 0.4);
+    }
+    
+    .bookmarklet:active {
+      transform: translateY(0);
+    }
+    
+    .bookmarklet .drag-hint {
+      display: block;
+      font-size: 11px;
+      font-weight: 400;
+      margin-top: 4px;
+      opacity: 0.85;
+    }
+    
+    .instructions {
+      background: #F8F9FA;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+    
+    .instructions ol {
+      margin: 0;
+      padding-left: 20px;
+    }
+    
+    .instructions li {
+      font-size: 13px;
+      color: #555;
+      line-height: 1.8;
+      margin-bottom: 6px;
+    }
+    
+    .instructions li:last-child {
+      margin-bottom: 0;
+    }
+    
+    .features {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    
+    .feature-item {
+      background: #F8F9FA;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+    
+    .feature-item:hover {
+      background: #EEF4FF;
+      transform: translateY(-2px);
+    }
+    
+    .feature-item .feature-icon {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+    
+    .feature-item .feature-name {
+      font-size: 13px;
+      color: #333;
+      font-weight: 500;
+    }
+    
+    .tips {
+      background: #FFF8E1;
+      border: 1px solid #FFE082;
+      border-radius: 8px;
+      padding: 16px;
+    }
+    
+    .tips-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #F57C00;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .tips ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    
+    .tips li {
+      font-size: 12px;
+      color: #555;
+      line-height: 1.7;
+    }
+    
+    .shortcuts {
+      background: #ECE9D8;
+      border-radius: 8px;
+      padding: 16px;
+    }
+    
+    .shortcuts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    
+    .shortcut-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 10px;
+      background: white;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    
+    .shortcut-key {
+      background: #ECE9D8;
+      border: 1px solid #ACA899;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-family: "Courier New", monospace;
+      font-size: 11px;
+      color: #333;
+    }
+    
+    .footer {
+      background: #F5F5F5;
+      padding: 16px 30px;
+      text-align: center;
+      font-size: 12px;
+      color: #888;
+    }
+    
+    .footer a {
+      color: #0058E1;
+      text-decoration: none;
+    }
+    
+    .footer a:hover {
+      text-decoration: underline;
+    }
+    
+    @media (max-width: 480px) {
+      .features, .shortcuts-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .header h1 {
+        font-size: 22px;
+      }
+      
+      .content {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>
+        <span class="icon">📝</span>
+        XDFOJ 学生端
+      </h1>
+      <p>仿 Dev-C++ Classic 风格的在线学习工具</p>
+    </div>
+    
+    <div class="content">
+      <div class="section">
+        <div class="section-title">快速安装</div>
+        <div class="install-box">
+          <h3>📌 拖拽以下按钮到书签栏</h3>
+          <a class="bookmarklet" href="javascript:(function(){if(window.__DevHOJ){alert('DevC++ XDFOJ 已在运行');return;}window.__DevHOJ=1;var s=document.createElement('script');s.src='https://xdfoj.pages.dev/xdfoj-stu.js?'+Date.now();s.onerror=function(){s.src='https://gitee.com/xdfoj/devhoj/raw/master/xdfoj-stu.js?'+Date.now();};document.head.appendChild(s);})();">
+            DevC++ XDFOJ
+            <span class="drag-hint">拖拽到书签栏使用</span>
+          </a>
+          
+          <div class="instructions">
+            <ol>
+              <li>将上方橙色按钮拖动到浏览器的书签栏</li>
+              <li>打开 <a href="https://code.xdf.cn/oj" target="_blank">XDFOJ 在线评测</a> 网站</li>
+              <li>点击书签栏中的 "DevC++ XDFOJ" 按钮启动</li>
+              <li>首次使用需要登录自己的账号</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">功能特性</div>
+        <div class="features">
+          <div class="feature-item">
+            <div class="feature-icon">💻</div>
+            <div class="feature-name">代码编辑器</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">✅</div>
+            <div class="feature-name">题目评测</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">🔍</div>
+            <div class="feature-name">题目搜索</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">📊</div>
+            <div class="feature-name">做题进度</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">▶️</div>
+            <div class="feature-name">本地自测</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">🎨</div>
+            <div class="feature-name">语法高亮</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">快捷键</div>
+        <div class="shortcuts">
+          <div class="shortcuts-grid">
+            <div class="shortcut-item">
+              <span>新建文件</span>
+              <span class="shortcut-key">Ctrl+N</span>
+            </div>
+            <div class="shortcut-item">
+              <span>打开文件</span>
+              <span class="shortcut-key">Ctrl+O</span>
+            </div>
+            <div class="shortcut-item">
+              <span>保存文件</span>
+              <span class="shortcut-key">Ctrl+S</span>
+            </div>
+            <div class="shortcut-item">
+              <span>编译代码</span>
+              <span class="shortcut-key">F9</span>
+            </div>
+            <div class="shortcut-item">
+              <span>运行程序</span>
+              <span class="shortcut-key">F10</span>
+            </div>
+            <div class="shortcut-item">
+              <span>提交评测</span>
+              <span class="shortcut-key">F11</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="section">
+        <div class="tips">
+          <div class="tips-title">
+            💡 使用提示
+          </div>
+          <ul>
+            <li>支持 C++、C、Python、Java 等多种编程语言</li>
+            <li>支持 LaTeX 数学公式渲染，方便查看题目</li>
+            <li>题目列表自动保存，下次打开继续上次进度</li>
+            <li>代码自动保存到浏览器本地存储</li>
+            <li>如遇登录问题，请确保在 XDFOJ 网站已登录</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <div class="footer">
+      <p>基于 XDFOJ 在线评测系统 | 仅供学习交流使用</p>
+      <p style="margin-top: 4px;">
+        <a href="https://code.xdf.cn/oj" target="_blank">访问 XDFOJ</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>
