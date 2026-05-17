@@ -3,389 +3,1678 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>XDFOJ 学生端 - DevC++ 在线学习工具</title>
+  <title>新东方Dev-OJ</title>
   <style>
+    :root {
+      --bg-primary: #ECE9D8;
+      --bg-secondary: #D4D0C8;
+      --bg-white: #FFFFFF;
+      --bg-hover: #C1D2EE;
+      --bg-active: #316AC5;
+      --bg-accent: #0A8043;
+      --bg-warning: #D97706;
+      --text-primary: #000000;
+      --text-secondary: #555555;
+      --text-muted: #888888;
+      --text-white: #FFFFFF;
+      --border-color: #ACA899;
+      --border-dark: #404040;
+      --accent-blue: #0058E1;
+      --accent-green: #0A8043;
+      --accent-red: #C00000;
+      --font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+      --font-mono: "Courier New", Consolas, monospace;
+    }
+
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
-    
-    body {
-      font-family: "Microsoft YaHei", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    
-    .container {
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-      max-width: 600px;
-      width: 100%;
+
+    html, body {
+      height: 100%;
       overflow: hidden;
     }
-    
-    .header {
-      background: linear-gradient(135deg, #0058E1 0%, #3A93FF 100%);
-      color: white;
-      padding: 30px;
-      text-align: center;
+
+    body {
+      font-family: var(--font-family);
+      font-size: 12px;
+      color: var(--text-primary);
+      background: var(--bg-primary);
     }
-    
-    .header h1 {
-      font-size: 28px;
-      font-weight: 700;
-      margin-bottom: 8px;
+
+    /* === 窗口框架 === */
+    .dev-window {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      border: 1px solid var(--border-dark);
+      box-shadow: 0 0 0 1px var(--border-dark), 4px 4px 12px rgba(0,0,0,0.4);
+    }
+
+    /* === 标题栏 === */
+    .dev-titlebar {
+      height: 24px;
+      background: linear-gradient(to bottom, #0058E1, #3A93FF);
+      color: var(--text-white);
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 12px;
+      padding: 0 8px;
+      font-weight: bold;
+      font-size: 12px;
+      cursor: default;
+      position: relative;
     }
-    
-    .header h1 .icon {
-      font-size: 36px;
-    }
-    
-    .header p {
-      font-size: 14px;
-      opacity: 0.9;
-    }
-    
-    .content {
-      padding: 30px;
-    }
-    
-    .section {
-      margin-bottom: 24px;
-    }
-    
-    .section-title {
-      font-size: 16px;
-      font-weight: 600;
-      color: #333;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .section-title::before {
-      content: '';
-      width: 4px;
-      height: 16px;
-      background: linear-gradient(180deg, #0058E1, #3A93FF);
-      border-radius: 2px;
-    }
-    
-    .install-box {
-      background: #F5F5DC;
-      border: 1px solid #ACA899;
-      border-radius: 8px;
-      padding: 20px;
-    }
-    
-    .install-box h3 {
-      font-size: 14px;
-      color: #333;
-      margin-bottom: 12px;
-    }
-    
-    .bookmarklet {
-      display: inline-block;
-      background: linear-gradient(135deg, #0A8043 0%, #0DAA56 100%);
-      color: white;
-      padding: 12px 24px;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: grab;
-      text-decoration: none;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 12px rgba(10, 128, 67, 0.3);
-    }
-    
-    .bookmarklet:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(10, 128, 67, 0.4);
-    }
-    
-    .bookmarklet:active {
-      transform: translateY(0);
-    }
-    
-    .bookmarklet .drag-hint {
-      display: block;
-      font-size: 11px;
-      font-weight: 400;
-      margin-top: 4px;
-      opacity: 0.85;
-    }
-    
-    .instructions {
-      background: #F8F9FA;
-      border-radius: 8px;
-      padding: 16px;
-      margin-top: 16px;
-    }
-    
-    .instructions ol {
-      margin: 0;
-      padding-left: 20px;
-    }
-    
-    .instructions li {
-      font-size: 13px;
-      color: #555;
-      line-height: 1.8;
-      margin-bottom: 6px;
-    }
-    
-    .instructions li:last-child {
-      margin-bottom: 0;
-    }
-    
-    .features {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-    
-    .feature-item {
-      background: #F8F9FA;
-      border-radius: 8px;
-      padding: 16px;
-      text-align: center;
-      transition: all 0.3s ease;
-    }
-    
-    .feature-item:hover {
-      background: #EEF4FF;
-      transform: translateY(-2px);
-    }
-    
-    .feature-item .feature-icon {
-      font-size: 28px;
-      margin-bottom: 8px;
-    }
-    
-    .feature-item .feature-name {
-      font-size: 13px;
-      color: #333;
-      font-weight: 500;
-    }
-    
-    .tips {
-      background: #FFF8E1;
-      border: 1px solid #FFE082;
-      border-radius: 8px;
-      padding: 16px;
-    }
-    
-    .tips-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: #F57C00;
-      margin-bottom: 8px;
+
+    .dev-titlebar .title {
       display: flex;
       align-items: center;
       gap: 6px;
     }
-    
-    .tips ul {
-      margin: 0;
-      padding-left: 20px;
+
+    .dev-titlebar .title-icon {
+      font-size: 14px;
     }
-    
-    .tips li {
-      font-size: 12px;
-      color: #555;
-      line-height: 1.7;
-    }
-    
-    .shortcuts {
-      background: #ECE9D8;
-      border-radius: 8px;
-      padding: 16px;
-    }
-    
-    .shortcuts-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-    }
-    
-    .shortcut-item {
+
+    .dev-titlebar .window-controls {
+      position: absolute;
+      right: 0;
       display: flex;
-      justify-content: space-between;
+      gap: 1px;
+    }
+
+    .dev-titlebar .win-btn {
+      width: 45px;
+      height: 24px;
+      display: flex;
       align-items: center;
-      padding: 6px 10px;
-      background: white;
-      border-radius: 4px;
-      font-size: 12px;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.15s;
     }
-    
-    .shortcut-key {
-      background: #ECE9D8;
-      border: 1px solid #ACA899;
-      padding: 2px 8px;
-      border-radius: 3px;
-      font-family: "Courier New", monospace;
+
+    .dev-titlebar .win-btn:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .dev-titlebar .win-btn.close:hover {
+      background: #C00;
+    }
+
+    /* === 菜单栏 === */
+    .dev-menubar {
+      height: 22px;
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      padding: 0 2px;
+      gap: 2px;
+    }
+
+    .dev-menubar .mi {
+      padding: 3px 10px;
+      cursor: default;
+      font-size: 12px;
+      position: relative;
+    }
+
+    .dev-menubar .mi:hover,
+    .dev-menubar .mi.on {
+      background: var(--bg-active);
+      color: var(--text-white);
+    }
+
+    /* === 工具栏 === */
+    .dev-toolbar {
+      height: 32px;
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      padding: 0 4px;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .dev-tb-btn {
+      height: 26px;
+      min-width: 30px;
+      padding: 0 8px;
+      background: var(--bg-primary);
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
       font-size: 11px;
-      color: #333;
+      border-radius: 2px;
+      transition: all 0.15s;
     }
-    
-    .footer {
-      background: #F5F5F5;
-      padding: 16px 30px;
-      text-align: center;
+
+    .dev-tb-btn:hover {
+      border-color: var(--bg-active);
+      background: #FFF6CB;
+    }
+
+    .dev-tb-btn:active {
+      background: var(--bg-hover);
+    }
+
+    .dev-tb-btn.primary {
+      background: var(--bg-accent);
+      color: var(--text-white);
+      border-color: var(--bg-accent);
+      font-weight: bold;
+    }
+
+    .dev-tb-btn.primary:hover {
+      background: #0DAA56;
+      border-color: #0DAA56;
+    }
+
+    .dev-tb-btn.warning {
+      background: var(--bg-warning);
+      color: var(--text-white);
+      border-color: var(--bg-warning);
+      font-weight: bold;
+    }
+
+    .dev-tb-sep {
+      width: 1px;
+      height: 22px;
+      background: var(--border-color);
+      margin: 0 4px;
+    }
+
+    .dev-lang-select {
+      height: 24px;
+      border: 1px solid var(--border-color);
+      font-size: 11px;
+      padding: 0 4px;
+      background: var(--bg-white);
+    }
+
+    .dev-search-box {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      margin-left: auto;
+    }
+
+    .dev-search-box input {
+      height: 22px;
+      border: 1px solid var(--border-color);
+      font-size: 11px;
+      padding: 0 6px;
+      width: 150px;
+    }
+
+    .dev-search-box button {
+      height: 22px;
+      padding: 0 8px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+    }
+
+    .dev-login-btn {
+      height: 26px;
+      padding: 0 12px;
+      background: var(--bg-accent);
+      color: var(--text-white);
+      border: 1px solid var(--bg-accent);
+      font-weight: bold;
+      font-size: 11px;
+      border-radius: 2px;
+      cursor: pointer;
+      white-space: nowrap;
+      margin-left: 8px;
+    }
+
+    /* === 主内容区 === */
+    .dev-body {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    /* === 左侧面板 === */
+    .dev-left-panel {
+      width: 200px;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border-color);
+      background: var(--bg-white);
+      flex-shrink: 0;
+    }
+
+    /* --- 题单加载器 --- */
+    .dev-plist-header {
+      height: 26px;
+      background: linear-gradient(to bottom, #0058E1, #3A93FF);
+      color: var(--text-white);
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      padding: 0 6px;
+      font-size: 11px;
+      gap: 4px;
+    }
+
+    .dev-plist-header .toggle-btn {
+      margin-left: auto;
+      font-size: 11px;
+      cursor: pointer;
+      opacity: 0.85;
+    }
+
+    .dev-plist-loader {
+      padding: 6px;
+      background: #EEF4FF;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .dev-plist-loader .loader-row {
+      margin-bottom: 6px;
+    }
+
+    .dev-plist-loader .loader-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .dev-plist-loader label {
+      display: block;
+      font-size: 10px;
+      color: var(--text-secondary);
+      margin-bottom: 2px;
+    }
+
+    .dev-plist-loader select {
+      width: 100%;
+      height: 22px;
+      border: 1px solid var(--border-color);
+      font-size: 11px;
+      padding: 0 4px;
+      background: var(--bg-white);
+    }
+
+    .dev-plist-loader .load-btn {
+      width: 100%;
+      height: 24px;
+      background: var(--bg-accent);
+      color: var(--text-white);
+      border: none;
+      font-weight: bold;
+      font-size: 11px;
+      cursor: pointer;
+      border-radius: 2px;
+    }
+
+    .dev-plist-loader .load-btn:hover {
+      background: #0DAA56;
+    }
+
+    /* --- 题单搜索 --- */
+    .dev-plist-search {
+      padding: 4px;
+      border-bottom: 1px solid var(--border-color);
+      background: #F5F5DC;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .dev-plist-search input {
+      flex: 1;
+      height: 20px;
+      border: 1px solid var(--border-color);
+      font-size: 11px;
+      padding: 0 4px;
+    }
+
+    .dev-plist-search .count {
+      font-size: 10px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .dev-plist-search .refresh-btn {
+      height: 20px;
+      padding: 0 5px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      font-size: 11px;
+      border-radius: 2px;
+    }
+
+    /* --- 题单列表 --- */
+    .dev-plist-list {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .dev-plist-item {
+      padding: 5px 8px;
+      cursor: pointer;
+      border-bottom: 1px dotted #DDD;
+      font-size: 11px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      white-space: nowrap;
+      overflow: hidden;
+      transition: background 0.15s;
+    }
+
+    .dev-plist-item:hover {
+      background: var(--bg-hover);
+    }
+
+    .dev-plist-item.active {
+      background: var(--bg-active);
+      color: var(--text-white);
+    }
+
+    .dev-plist-item .pid {
+      color: var(--accent-blue);
+      font-weight: bold;
+      font-family: var(--font-mono);
+      min-width: 45px;
+      flex-shrink: 0;
+    }
+
+    .dev-plist-item.active .pid {
+      color: var(--text-white);
+    }
+
+    .dev-plist-item .ptitle {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+    }
+
+    .dev-plist-item .ac-mark {
+      color: var(--accent-green);
+      font-weight: bold;
       font-size: 12px;
-      color: #888;
+      flex-shrink: 0;
     }
-    
-    .footer a {
-      color: #0058E1;
-      text-decoration: none;
+
+    .dev-plist-item.active .ac-mark {
+      color: #90EE90;
     }
-    
-    .footer a:hover {
-      text-decoration: underline;
+
+    .dev-plist-empty {
+      color: var(--text-muted);
+      text-align: center;
+      padding: 40px 10px;
+      font-size: 11px;
     }
-    
-    @media (max-width: 480px) {
-      .features, .shortcuts-grid {
-        grid-template-columns: 1fr;
+
+    /* === 中间面板 === */
+    .dev-center-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      background: var(--bg-white);
+    }
+
+    /* --- 标签页 --- */
+    .dev-center-tabs {
+      height: 26px;
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: flex-end;
+      padding: 0 2px;
+      flex-shrink: 0;
+    }
+
+    .dev-center-tab {
+      padding: 4px 12px;
+      border: 1px solid var(--border-color);
+      border-bottom: none;
+      background: var(--bg-secondary);
+      cursor: pointer;
+      font-size: 11px;
+      margin: 2px 1px 0 0;
+      border-radius: 3px 3px 0 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .dev-center-tab.on {
+      background: var(--bg-white);
+      font-weight: bold;
+      border-bottom: 1px solid var(--bg-white);
+      margin-bottom: -1px;
+    }
+
+    /* --- 题目内容 --- */
+    .dev-problem-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 18px;
+      font-family: "Times New Roman", "SimSun", serif;
+      line-height: 1.7;
+      color: var(--text-primary);
+    }
+
+    .dev-problem-area h2 {
+      font-size: 1.35em;
+      margin: 0 0 8px;
+      color: #000080;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 4px;
+    }
+
+    .dev-problem-area h3 {
+      font-size: 1.1em;
+      margin: 14px 0 6px;
+      color: #000080;
+      border-left: 4px solid var(--accent-blue);
+      padding-left: 8px;
+      background: #F0F4FA;
+    }
+
+    .dev-problem-area .meta {
+      color: var(--text-secondary);
+      font-size: 0.85em;
+      margin-bottom: 8px;
+      background: #F5F5DC;
+      padding: 4px 8px;
+      border-radius: 2px;
+    }
+
+    .dev-problem-area pre {
+      background: #FFFBE6;
+      border: 1px solid #E0D070;
+      padding: 8px 10px;
+      font-family: var(--font-mono);
+      font-size: 0.92em;
+      white-space: pre-wrap;
+      overflow: auto;
+      border-radius: 2px;
+    }
+
+    .dev-problem-area code {
+      background: #FFF3CD;
+      padding: 1px 4px;
+      border-radius: 2px;
+      font-family: var(--font-mono);
+    }
+
+    .dev-problem-area table {
+      border-collapse: collapse;
+      margin: 6px 0;
+      font-size: 0.95em;
+    }
+
+    .dev-problem-area th {
+      background: #E8EEF8;
+      color: #000080;
+      border: 1px solid var(--border-color);
+      padding: 4px 10px;
+      font-weight: bold;
+      text-align: left;
+    }
+
+    .dev-problem-area td {
+      border: 1px solid var(--border-color);
+      padding: 3px 8px;
+    }
+
+    .dev-problem-area tr:nth-child(even) td {
+      background: #F5F8FF;
+    }
+
+    .dev-problem-empty {
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 50px;
+    }
+
+    /* === 右侧面板 === */
+    .dev-right-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-width: 300px;
+    }
+
+    /* --- 文件标签 --- */
+    .dev-file-tabs {
+      height: 26px;
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: flex-end;
+      padding: 0 2px;
+      flex-shrink: 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+
+    .dev-file-tab {
+      padding: 4px 10px;
+      border: 1px solid var(--border-color);
+      border-bottom: none;
+      background: var(--bg-secondary);
+      cursor: pointer;
+      font-size: 11px;
+      margin: 2px 1px 0 0;
+      border-radius: 3px 3px 0 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .dev-file-tab.on {
+      background: var(--bg-white);
+      font-weight: bold;
+      border-bottom: 1px solid var(--bg-white);
+      margin-bottom: -1px;
+    }
+
+    .dev-file-tab .close-btn {
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 0 2px;
+      font-size: 10px;
+    }
+
+    .dev-file-tab .close-btn:hover {
+      color: var(--accent-red);
+      background: #FBB;
+      border-radius: 2px;
+    }
+
+    .dev-file-tab.add {
+      background: var(--bg-primary);
+      padding: 4px 8px;
+      font-weight: bold;
+    }
+
+    /* --- 编辑器区域 --- */
+    .dev-editor-area {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+      position: relative;
+      background: var(--bg-white);
+    }
+
+    .dev-gutter {
+      width: 46px;
+      background: var(--bg-primary);
+      border-right: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      text-align: right;
+      padding: 4px 6px 4px 0;
+      overflow: hidden;
+      user-select: none;
+      flex-shrink: 0;
+      line-height: 1.45;
+    }
+
+    .dev-code-wrap {
+      flex: 1;
+      position: relative;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .dev-code-pre,
+    .dev-code {
+      position: absolute;
+      inset: 0;
+      margin: 0;
+      padding: 4px 8px;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      line-height: 1.45;
+      tab-size: 4;
+      border: none;
+      outline: none;
+      white-space: pre;
+      overflow: auto;
+      box-sizing: border-box;
+    }
+
+    .dev-code-pre {
+      color: var(--text-primary);
+      background: var(--bg-white);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .dev-code {
+      color: transparent;
+      caret-color: var(--text-primary);
+      background: transparent;
+      resize: none;
+      z-index: 2;
+    }
+
+    .dev-code::selection {
+      background: var(--bg-active);
+      color: var(--text-white);
+    }
+
+    /* --- 语法高亮 --- */
+    .tk-kw { color: #0000FF; font-weight: bold; }
+    .tk-tp { color: #0000C0; }
+    .tk-st { color: #A31515; }
+    .tk-cm { color: #008000; font-style: italic; }
+    .tk-nm { color: #098658; }
+    .tk-fn { color: #795E26; }
+    .tk-pp { color: #A52A2A; font-weight: bold; }
+
+    /* --- 输出区域 --- */
+    .dev-resizer {
+      height: 4px;
+      background: var(--border-color);
+      cursor: ns-resize;
+      flex-shrink: 0;
+      transition: background 0.1s;
+    }
+
+    .dev-resizer:hover {
+      background: var(--accent-blue);
+    }
+
+    .dev-output-area {
+      height: 180px;
+      flex: 0 0 180px;
+      background: var(--bg-white);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      min-height: 60px;
+      overflow: hidden;
+    }
+
+    .dev-output-header {
+      height: 24px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      padding: 0 6px;
+      font-weight: bold;
+      font-size: 11px;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .dev-output-tab {
+      padding: 2px 10px;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+
+    .dev-output-tab.on {
+      background: var(--bg-white);
+      border: 1px solid var(--border-color);
+      border-bottom-color: var(--bg-white);
+    }
+
+    .dev-output-clear {
+      margin-left: auto;
+      cursor: pointer;
+      padding: 0 8px;
+    }
+
+    .dev-output-body {
+      flex: 1;
+      overflow: auto;
+      padding: 6px 10px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      white-space: pre-wrap;
+      background: var(--bg-white);
+    }
+
+    .dev-output-body .ok { color: var(--accent-green); font-weight: bold; }
+    .dev-output-body .err { color: var(--accent-red); font-weight: bold; }
+    .dev-output-body .run { color: var(--accent-blue); }
+    .dev-output-body .ts { color: var(--text-muted); }
+
+    /* === 状态栏 === */
+    .dev-statusbar {
+      height: 22px;
+      background: var(--bg-primary);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      gap: 14px;
+      flex-shrink: 0;
+    }
+
+    .dev-statusbar .seg {
+      border-right: 1px solid var(--border-color);
+      padding-right: 14px;
+    }
+
+    .dev-statusbar .seg:last-child {
+      border-right: none;
+      padding-right: 0;
+    }
+
+    /* === 模态框 === */
+    .dev-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 1000002;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .dev-modal-bd {
+      background: var(--bg-primary);
+      border: 2px solid var(--bg-white);
+      box-shadow: 0 0 0 1px var(--border-dark), 4px 4px 12px rgba(0,0,0,0.4);
+      width: 520px;
+      max-width: 92vw;
+    }
+
+    .dev-modal-hd {
+      height: 24px;
+      background: linear-gradient(to bottom, #0058E1, #3A93FF);
+      color: var(--text-white);
+      font-weight: bold;
+      padding: 0 8px;
+      display: flex;
+      align-items: center;
+      font-size: 12px;
+    }
+
+    .dev-modal-ft {
+      padding: 8px;
+      text-align: right;
+      background: var(--bg-primary);
+    }
+
+    .dev-modal-ft button {
+      height: 26px;
+      padding: 0 16px;
+      margin-left: 6px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      font-size: 11px;
+    }
+
+    .dev-modal-ft button:hover {
+      background: #FFF6CB;
+      border-color: var(--bg-active);
+    }
+
+    /* === 响应式 === */
+    @media (max-width: 1024px) {
+      .dev-left-panel {
+        width: 160px;
       }
       
-      .header h1 {
-        font-size: 22px;
+      .dev-plist-item .pid {
+        min-width: 35px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .dev-left-panel {
+        display: none;
       }
       
-      .content {
-        padding: 20px;
+      .dev-center-panel {
+        display: none;
+      }
+      
+      .dev-right-panel {
+        min-width: 100%;
       }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>
-        <span class="icon">📝</span>
-        XDFOJ 学生端
-      </h1>
-      <p>仿 Dev-C++ Classic 风格的在线学习工具</p>
-    </div>
-    
-    <div class="content">
-      <div class="section">
-        <div class="section-title">快速安装</div>
-        <div class="install-box">
-          <h3>📌 拖拽以下按钮到书签栏</h3>
-          <a class="bookmarklet" href="javascript:(function(){if(window.__DevHOJ){alert('DevC++ XDFOJ 已在运行');return;}window.__DevHOJ=1;var s=document.createElement('script');s.src='https://xdfoj.pages.dev/xdfoj-stu.js?'+Date.now();s.onerror=function(){s.src='https://gitee.com/xdfoj/devhoj/raw/master/xdfoj-stu.js?'+Date.now();};document.head.appendChild(s);})();">
-            DevC++ XDFOJ
-            <span class="drag-hint">拖拽到书签栏使用</span>
-          </a>
-          
-          <div class="instructions">
-            <ol>
-              <li>将上方橙色按钮拖动到浏览器的书签栏</li>
-              <li>打开 <a href="https://code.xdf.cn/oj" target="_blank">XDFOJ 在线评测</a> 网站</li>
-              <li>点击书签栏中的 "DevC++ XDFOJ" 按钮启动</li>
-              <li>首次使用需要登录自己的账号</li>
-            </ol>
-          </div>
-        </div>
+  <div class="dev-window">
+    <!-- 标题栏 -->
+    <div class="dev-titlebar">
+      <div class="title">
+        <span class="title-icon">📝</span>
+        <span>新东方Dev-OJ</span>
       </div>
-      
-      <div class="section">
-        <div class="section-title">功能特性</div>
-        <div class="features">
-          <div class="feature-item">
-            <div class="feature-icon">💻</div>
-            <div class="feature-name">代码编辑器</div>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon">✅</div>
-            <div class="feature-name">题目评测</div>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon">🔍</div>
-            <div class="feature-name">题目搜索</div>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon">📊</div>
-            <div class="feature-name">做题进度</div>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon">▶️</div>
-            <div class="feature-name">本地自测</div>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon">🎨</div>
-            <div class="feature-name">语法高亮</div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="section">
-        <div class="section-title">快捷键</div>
-        <div class="shortcuts">
-          <div class="shortcuts-grid">
-            <div class="shortcut-item">
-              <span>新建文件</span>
-              <span class="shortcut-key">Ctrl+N</span>
-            </div>
-            <div class="shortcut-item">
-              <span>打开文件</span>
-              <span class="shortcut-key">Ctrl+O</span>
-            </div>
-            <div class="shortcut-item">
-              <span>保存文件</span>
-              <span class="shortcut-key">Ctrl+S</span>
-            </div>
-            <div class="shortcut-item">
-              <span>编译代码</span>
-              <span class="shortcut-key">F9</span>
-            </div>
-            <div class="shortcut-item">
-              <span>运行程序</span>
-              <span class="shortcut-key">F10</span>
-            </div>
-            <div class="shortcut-item">
-              <span>提交评测</span>
-              <span class="shortcut-key">F11</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="section">
-        <div class="tips">
-          <div class="tips-title">
-            💡 使用提示
-          </div>
-          <ul>
-            <li>支持 C++、C、Python、Java 等多种编程语言</li>
-            <li>支持 LaTeX 数学公式渲染，方便查看题目</li>
-            <li>题目列表自动保存，下次打开继续上次进度</li>
-            <li>代码自动保存到浏览器本地存储</li>
-            <li>如遇登录问题，请确保在 XDFOJ 网站已登录</li>
-          </ul>
-        </div>
+      <div class="window-controls">
+        <div class="win-btn">−</div>
+        <div class="win-btn">□</div>
+        <div class="win-btn close">×</div>
       </div>
     </div>
-    
-    <div class="footer">
-      <p>基于 XDFOJ 在线评测系统 | 仅供学习交流使用</p>
-      <p style="margin-top: 4px;">
-        <a href="https://code.xdf.cn/oj" target="_blank">访问 XDFOJ</a>
-      </p>
+
+    <!-- 菜单栏 -->
+    <div class="dev-menubar">
+      <span class="mi" data-m="file">文件(F)</span>
+      <span class="mi" data-m="edit">编辑(E)</span>
+      <span class="mi" data-m="run">运行(R)</span>
+      <span class="mi" data-m="view">查看(V)</span>
+      <span class="mi" data-m="help">帮助(H)</span>
+    </div>
+
+    <!-- 工具栏 -->
+    <div class="dev-toolbar">
+      <button class="dev-tb-btn" title="新建 Ctrl+N">📄 新建</button>
+      <button class="dev-tb-btn" title="打开 Ctrl+O">📂 打开</button>
+      <button class="dev-tb-btn" title="保存 Ctrl+S">💾 保存</button>
+      <div class="dev-tb-sep"></div>
+      <button class="dev-tb-btn" title="编译 F9">⚙ 编译</button>
+      <button class="dev-tb-btn primary" title="运行 F10">▶ 运行</button>
+      <div class="dev-tb-sep"></div>
+      <button class="dev-tb-btn warning" title="提交 F11">📤 提交</button>
+      <div class="dev-tb-sep"></div>
+      <select class="dev-lang-select" id="dev-lang">
+        <option value="C++ With O2">C++ With O2</option>
+        <option value="C++">C++</option>
+        <option value="Python3">Python3</option>
+        <option value="Java">Java</option>
+        <option value="C">C</option>
+      </select>
+      <div class="dev-search-box">
+        <input type="text" placeholder="搜索题号/关键词">
+        <button>🔍</button>
+      </div>
+      <button class="dev-login-btn" id="dev-login-btn">👤 登录</button>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="dev-body">
+      <!-- 左侧面板 - 题单 -->
+      <div class="dev-left-panel">
+        <div class="dev-plist-header">
+          <span>📋题单</span>
+          <span class="toggle-btn" id="dev-plist-toggle">▲</span>
+        </div>
+        
+        <div class="dev-plist-loader" id="dev-plist-loader">
+          <div class="loader-row">
+            <label>类型</label>
+            <select id="dev-plist-type">
+              <option value="public-training">公共训练</option>
+              <option value="group-training">团队训练</option>
+              <option value="group-contest">团队比赛</option>
+            </select>
+          </div>
+          <div class="loader-row" id="dev-plist-group-row" style="display: none;">
+            <label>团队</label>
+            <select id="dev-plist-group">
+              <option value="">-- 请选择 --</option>
+            </select>
+          </div>
+          <div class="loader-row" id="dev-plist-cat-row">
+            <label>分类</label>
+            <select id="dev-plist-cat">
+              <option value="">加载中...</option>
+            </select>
+          </div>
+          <div class="loader-row">
+            <label>题单</label>
+            <select id="dev-plist-item">
+              <option value="">请先选择分类</option>
+            </select>
+          </div>
+          <div class="loader-row">
+            <button class="load-btn" id="dev-plist-load">▶ 加载</button>
+          </div>
+        </div>
+
+        <div class="dev-plist-search">
+          <input type="text" placeholder="在题单内搜索..." id="dev-plist-search">
+          <span class="count" id="dev-plist-count">未加载题单</span>
+          <button class="refresh-btn" id="dev-plist-refresh">⟳</button>
+        </div>
+
+        <div class="dev-plist-list" id="dev-plist-list">
+          <div class="dev-plist-empty">展开上方加载器加载题单</div>
+        </div>
+      </div>
+
+      <!-- 中间面板 - 题目描述 -->
+      <div class="dev-center-panel">
+        <div class="dev-center-tabs">
+          <div class="dev-center-tab" data-tab="desc">简介</div>
+          <div class="dev-center-tab on" data-tab="prob">题目描述</div>
+        </div>
+        <div class="dev-problem-area" id="dev-problem-area">
+          <div class="dev-problem-empty">未选择题目</div>
+        </div>
+      </div>
+
+      <!-- 右侧面板 - 代码编辑器 -->
+      <div class="dev-right-panel">
+        <div class="dev-file-tabs" id="dev-file-tabs">
+          <div class="dev-file-tab on">
+            <span>未命名.cpp</span>
+            <span class="close-btn">✕</span>
+          </div>
+          <div class="dev-file-tab add">+</div>
+        </div>
+        <div class="dev-editor-area">
+          <div class="dev-gutter" id="dev-gutter">1</div>
+          <div class="dev-code-wrap">
+            <pre class="dev-code-pre" id="dev-code-pre"></pre>
+            <textarea class="dev-code" id="dev-code" spellcheck="false"></textarea>
+          </div>
+        </div>
+        <div class="dev-resizer"></div>
+        <div class="dev-output-area">
+          <div class="dev-output-header">
+            <span class="dev-output-tab on" data-output="run">运行</span>
+            <span class="dev-output-tab" data-output="result">结果</span>
+            <span class="dev-output-clear">[ 清除 ]</span>
+          </div>
+          <div class="dev-output-body" id="dev-output">
+            <span class="ts">[15:26:44]</span> <span class="run">DevC++ XDFOJ 已启动 - ✓ 已登录</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 状态栏 -->
+    <div class="dev-statusbar">
+      <span class="seg">行: <b id="dev-ln">1</b>  列: <b id="dev-col">1</b></span>
+      <span class="seg" id="dev-status-mode">未加载题目</span>
+      <span class="seg" id="dev-status-lang">C++ With O2</span>
+      <span class="seg">UTF-8</span>
+      <span id="dev-status-msg">就绪</span>
     </div>
   </div>
+
+  <script>
+    // === 工具函数 ===
+    const $ = (s, p = document) => p.querySelector(s);
+    const $$ = (s, p = document) => [...p.querySelectorAll(s)];
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+    // === 全局状态 ===
+    const files = [];
+    let activeFile = 0;
+    let problemListState = {
+      mode: '',
+      tid: '',
+      cid: '',
+      gid: '',
+      problems: [],
+      label: ''
+    };
+    let acSet = new Set();
+
+    // === 代码模板 ===
+    function tplFor(lang) {
+      lang = String(lang || '').toLowerCase();
+      if (lang.includes('python')) {
+        return '';
+      }
+      if (lang.includes('java')) {
+        return `import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        
+    }
+}`;
+      }
+      if (lang === 'c') {
+        return `#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+int main() {
+    return 0;
+}`;
+      }
+      return `#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+    return 0;
+}`;
+    }
+
+    // === 初始化编辑器 ===
+    const codeEl = $('#dev-code');
+    const preEl = $('#dev-code-pre');
+    const gutter = $('#dev-gutter');
+    const output = $('#dev-output');
+
+    // 初始化代码
+    files.push({
+      id: Date.now().toString(),
+      name: '未命名.cpp',
+      code: tplFor('C++ With O2'),
+      lang: 'C++ With O2',
+      displayId: '',
+      title: '',
+      mode: '',
+      pid: '',
+      cid: '',
+      tid: '',
+      gid: '',
+      problem: null,
+      languages: ['C++ With O2', 'C++', 'Python3', 'Java', 'C']
+    });
+
+    codeEl.value = files[0].code;
+
+    // === 语法高亮 ===
+    const KW_CPP = new Set(['if', 'else', 'for', 'while', 'do', 'return', 'break', 'continue', 'switch', 'case', 'default', 'goto', 'typedef', 'struct', 'class', 'public', 'private', 'protected', 'virtual', 'override', 'template', 'typename', 'namespace', 'using', 'new', 'delete', 'try', 'catch', 'throw', 'const', 'static', 'extern', 'inline', 'friend', 'operator', 'this', 'auto', 'register', 'volatile', 'sizeof', 'true', 'false', 'nullptr', 'NULL']);
+    const TP_CPP = new Set(['int', 'long', 'short', 'char', 'float', 'double', 'void', 'bool', 'signed', 'unsigned', 'string', 'vector', 'map', 'set', 'queue', 'stack', 'deque', 'list', 'pair', 'size_t', 'FILE']);
+    const KW_PY = new Set(['def', 'return', 'if', 'elif', 'else', 'for', 'while', 'break', 'continue', 'import', 'from', 'as', 'class', 'try', 'except', 'finally', 'raise', 'with', 'pass', 'lambda', 'yield', 'global', 'nonlocal', 'in', 'is', 'not', 'and', 'or', 'True', 'False', 'None', 'print', 'input', 'range', 'len', 'int', 'str', 'float', 'list', 'dict', 'set', 'tuple']);
+    const KW_JAVA = new Set(['public', 'private', 'protected', 'class', 'interface', 'extends', 'implements', 'static', 'final', 'void', 'int', 'long', 'short', 'char', 'float', 'double', 'boolean', 'if', 'else', 'for', 'while', 'do', 'return', 'break', 'continue', 'switch', 'case', 'default', 'new', 'this', 'super', 'try', 'catch', 'finally', 'throw', 'throws', 'import', 'package', 'null', 'true', 'false', 'String', 'System']);
+
+    function highlight(code, lang) {
+      const isPy = /Python/i.test(lang);
+      const isJava = /Java/i.test(lang);
+      const KW = isPy ? KW_PY : isJava ? KW_JAVA : KW_CPP;
+      const TP = isPy || isJava ? null : TP_CPP;
+      let html = '';
+      let i = 0, n = code.length;
+      while (i < n) {
+        const c = code[i];
+        if (!isPy && c === '/' && code[i + 1] === '/') {
+          let j = code.indexOf('\n', i); if (j < 0) j = n;
+          html += '<span class="tk-cm">' + esc(code.slice(i, j)) + '</span>';
+          i = j; continue;
+        }
+        if (!isPy && c === '/' && code[i + 1] === '*') {
+          let j = code.indexOf('*/', i + 2); j = j < 0 ? n : j + 2;
+          html += '<span class="tk-cm">' + esc(code.slice(i, j)) + '</span>';
+          i = j; continue;
+        }
+        if (isPy && c === '#') {
+          let j = code.indexOf('\n', i); if (j < 0) j = n;
+          html += '<span class="tk-cm">' + esc(code.slice(i, j)) + '</span>';
+          i = j; continue;
+        }
+        if (!isPy && !isJava && c === '#' && (i === 0 || code[i - 1] === '\n')) {
+          let j = code.indexOf('\n', i); if (j < 0) j = n;
+          html += '<span class="tk-pp">' + esc(code.slice(i, j)) + '</span>';
+          i = j; continue;
+        }
+        if (c === '"' || c === "'") {
+          let j = i + 1;
+          while (j < n && code[j] !== c) { if (code[j] === '\\') j++; j++; }
+          j = Math.min(j + 1, n);
+          html += '<span class="tk-st">' + esc(code.slice(i, j)) + '</span>';
+          i = j; continue;
+        }
+        if (/\d/.test(c) && (i === 0 || !/[A-Za-z_]/.test(code[i - 1]))) {
+          let j = i;
+          while (j < n && /[\d.xXa-fA-F]/.test(code[j])) j++;
+          html += '<span class="tk-nm">' + esc(code.slice(i, j)) + '</span>';
+          i = j; continue;
+        }
+        if (/[A-Za-z_]/.test(c)) {
+          let j = i;
+          while (j < n && /[A-Za-z0-9_]/.test(code[j])) j++;
+          const w = code.slice(i, j);
+          if (KW.has(w)) html += '<span class="tk-kw">' + esc(w) + '</span>';
+          else if (TP && TP.has(w)) html += '<span class="tk-tp">' + esc(w) + '</span>';
+          else if (code[j] === '(') html += '<span class="tk-fn">' + esc(w) + '</span>';
+          else html += esc(w);
+          i = j; continue;
+        }
+        html += esc(c); i++;
+      }
+      return html;
+    }
+
+    function refreshHighlight() {
+      preEl.innerHTML = highlight(codeEl.value + '\n', files[activeFile].lang);
+      preEl.scrollTop = codeEl.scrollTop;
+      preEl.scrollLeft = codeEl.scrollLeft;
+    }
+
+    function refreshGutter() {
+      const lines = codeEl.value.split('\n').length;
+      gutter.innerHTML = Array.from({ length: lines }, (_, i) => i + 1).join('<br>');
+      gutter.scrollTop = codeEl.scrollTop;
+    }
+
+    function refreshLnCol() {
+      const v = codeEl.value, p = codeEl.selectionStart;
+      const before = v.slice(0, p), ln = before.split('\n').length;
+      const col = p - before.lastIndexOf('\n');
+      $('#dev-ln').textContent = ln;
+      $('#dev-col').textContent = col;
+    }
+
+    // === 代码编辑器事件 ===
+    codeEl.addEventListener('input', () => {
+      files[activeFile].code = codeEl.value;
+      refreshHighlight();
+      refreshGutter();
+      refreshLnCol();
+    });
+
+    codeEl.addEventListener('click', refreshLnCol);
+    codeEl.addEventListener('keyup', e => {
+      if (!['ArrowUp', 'ArrowDown', 'Tab', 'Enter', 'Escape'].includes(e.key)) {
+        refreshLnCol();
+      }
+    });
+
+    codeEl.addEventListener('scroll', () => {
+      gutter.scrollTop = codeEl.scrollTop;
+      preEl.scrollTop = codeEl.scrollTop;
+      preEl.scrollLeft = codeEl.scrollLeft;
+    });
+
+    // === 键盘快捷键 ===
+    codeEl.addEventListener('keydown', e => {
+      const v = codeEl.value;
+      const s = codeEl.selectionStart;
+      const end = codeEl.selectionEnd;
+
+      // Tab 缩进
+      if (e.key === 'Tab' && !e.shiftKey) {
+        e.preventDefault();
+        if (s !== end) {
+          const lineStart = v.lastIndexOf('\n', s - 1) + 1;
+          const before = v.slice(0, lineStart);
+          const selected = v.slice(lineStart, end);
+          const after = v.slice(end);
+          const indented = selected.replace(/^/gm, '    ');
+          codeEl.value = before + indented + after;
+          codeEl.selectionStart = lineStart;
+          codeEl.selectionEnd = lineStart + indented.length;
+        } else {
+          codeEl.value = v.slice(0, s) + '    ' + v.slice(end);
+          codeEl.selectionStart = codeEl.selectionEnd = s + 4;
+        }
+        files[activeFile].code = codeEl.value;
+        refreshHighlight();
+        refreshGutter();
+        return;
+      }
+
+      // 括号自动配对
+      if ((e.key === '{' || e.key === '(' || e.key === '[' || e.key === '"' || e.key === "'") && s === end) {
+        const pair = { '{': '}', '(': ')', '[': ']', '"': '"', "'": "'" }[e.key];
+        e.preventDefault();
+        codeEl.value = v.slice(0, s) + e.key + pair + v.slice(s);
+        codeEl.selectionStart = codeEl.selectionEnd = s + 1;
+        files[activeFile].code = codeEl.value;
+        refreshHighlight();
+        return;
+      }
+
+      // Ctrl+S 保存
+      if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        doSave();
+      }
+    });
+
+    // === 文件操作 ===
+    function doNew() {
+      const f = files[activeFile];
+      if (f) f.code = codeEl.value;
+      const newFile = {
+        id: Date.now().toString(),
+        name: '未命名.cpp',
+        code: tplFor(f ? f.lang : 'C++ With O2'),
+        lang: f ? f.lang : 'C++ With O2',
+        displayId: '',
+        title: '',
+        mode: '',
+        pid: '',
+        cid: '',
+        tid: '',
+        gid: '',
+        problem: null,
+        languages: ['C++ With O2', 'C++', 'Python3', 'Java', 'C']
+      };
+      files.push(newFile);
+      activeFile = files.length - 1;
+      codeEl.value = newFile.code;
+      renderFileTabs();
+      refreshHighlight();
+      refreshGutter();
+      refreshLnCol();
+    }
+
+    function doOpen() {
+      const inp = document.createElement('input');
+      inp.type = 'file';
+      inp.accept = '.cpp,.c,.cc,.cxx,.txt,.py,.java';
+      inp.onchange = function() {
+        const f = inp.files[0];
+        if (!f) return;
+        const rd = new FileReader();
+        rd.onload = function() {
+          const ext = (f.name.match(/\.\w+$/) || [''])[0].toLowerCase();
+          const lang = ext === '.py' ? 'Python3' : ext === '.java' ? 'Java' : ext === '.c' ? 'C' : 'C++ With O2';
+          files.push({
+            id: Date.now().toString(),
+            name: f.name,
+            code: String(rd.result),
+            lang: lang,
+            displayId: '',
+            title: '',
+            mode: '',
+            pid: '',
+            cid: '',
+            tid: '',
+            gid: '',
+            problem: null,
+            languages: ['C++ With O2', 'C++', 'Python3', 'Java', 'C']
+          });
+          activeFile = files.length - 1;
+          codeEl.value = files[activeFile].code;
+          renderFileTabs();
+          refreshHighlight();
+          refreshGutter();
+        };
+        rd.readAsText(f);
+      };
+      inp.click();
+    }
+
+    function doSave() {
+      const f = files[activeFile];
+      if (!f) return;
+      f.code = codeEl.value;
+      const blob = new Blob([f.code], { type: 'text/plain' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = f.name;
+      a.click();
+      out('已保存到本地: ' + f.name, 'ok');
+    }
+
+    function doCompile() {
+      out('编译中...', 'run');
+      setTimeout(() => {
+        out('✓ 编译通过', 'ok');
+      }, 1000);
+    }
+
+    function doRun() {
+      out('运行中...', 'run');
+      setTimeout(() => {
+        out('程序执行完成', 'ok');
+      }, 1000);
+    }
+
+    function doSubmit() {
+      out('提交中...', 'run');
+      setTimeout(() => {
+        out('✓ 提交成功，等待评测...', 'ok');
+      }, 1000);
+    }
+
+    // === 输出函数 ===
+    function out(html, cls) {
+      const t = new Date().toLocaleTimeString();
+      output.innerHTML += '<div><span class="ts">[' + t + ']</span> <span class="' + (cls || '') + '">' + html + '</span></div>';
+      output.scrollTop = output.scrollHeight;
+    }
+
+    // === 渲染文件标签 ===
+    function renderFileTabs() {
+      const wrap = $('#dev-file-tabs');
+      let html = '';
+      for (let i = 0; i < files.length; i++) {
+        const f = files[i];
+        const on = i === activeFile ? ' on' : '';
+        html += `<div class="dev-file-tab${on}" data-i="${i}">
+          <span>${esc(f.name)}</span>
+          <span class="close-btn" data-cx="${i}">✕</span>
+        </div>`;
+      }
+      html += '<div class="dev-file-tab add">+</div>';
+      wrap.innerHTML = html;
+
+      $$('.dev-file-tab[data-i]', wrap).forEach(t => {
+        t.onclick = e => {
+          if (e.target.classList.contains('close-btn')) return;
+          switchFile(+t.dataset.i);
+        };
+      });
+
+      $$('.close-btn[data-cx]', wrap).forEach(x => {
+        x.onclick = e => {
+          e.stopPropagation();
+          closeFile(+x.dataset.cx);
+        };
+      });
+
+      $('.dev-file-tab.add').onclick = doNew;
+    }
+
+    function switchFile(i) {
+      if (i < 0 || i >= files.length) return;
+      if (files[activeFile]) files[activeFile].code = codeEl.value;
+      activeFile = i;
+      const f = files[activeFile];
+      codeEl.value = f.code;
+      $('#dev-lang').value = f.lang;
+      $('#dev-status-lang').textContent = f.lang;
+      refreshHighlight();
+      refreshGutter();
+      refreshLnCol();
+      renderFileTabs();
+    }
+
+    function closeFile(i) {
+      if (i < 0 || i >= files.length) return;
+      if (files[i].code.trim() && files[i].code !== tplFor(files[i].lang)) {
+        if (!confirm('文件可能未保存，确认关闭?')) return;
+      }
+      files.splice(i, 1);
+      if (!files.length) {
+        files.push({
+          id: Date.now().toString(),
+          name: '未命名.cpp',
+          code: tplFor('C++ With O2'),
+          lang: 'C++ With O2',
+          displayId: '',
+          title: '',
+          mode: '',
+          pid: '',
+          cid: '',
+          tid: '',
+          gid: '',
+          problem: null,
+          languages: ['C++ With O2', 'C++', 'Python3', 'Java', 'C']
+        });
+        activeFile = 0;
+      } else {
+        if (activeFile > i) activeFile--;
+        else if (activeFile === i) activeFile = Math.min(i, files.length - 1);
+      }
+      codeEl.value = files[activeFile].code;
+      renderFileTabs();
+      refreshHighlight();
+      refreshGutter();
+    }
+
+    // === 工具栏按钮绑定 ===
+    $$('.dev-toolbar .dev-tb-btn')[0].onclick = doNew;
+    $$('.dev-toolbar .dev-tb-btn')[1].onclick = doOpen;
+    $$('.dev-toolbar .dev-tb-btn')[2].onclick = doSave;
+    $$('.dev-toolbar .dev-tb-btn')[3].onclick = doCompile;
+    $$('.dev-toolbar .dev-tb-btn')[4].onclick = doRun;
+    $$('.dev-toolbar .dev-tb-btn')[5].onclick = doSubmit;
+
+    $('#dev-lang').onchange = e => {
+      const f = files[activeFile];
+      if (!f) return;
+      f.lang = e.target.value;
+      $('#dev-status-lang').textContent = f.lang;
+      refreshHighlight();
+    };
+
+    // === 输出区切换 ===
+    $$('.dev-output-tab').forEach(t => {
+      t.onclick = () => {
+        $$('.dev-output-tab').forEach(x => x.classList.toggle('on', x === t));
+        output.innerHTML = '';
+        if (t.dataset.output === 'run') {
+          out('DevC++ XDFOJ 已启动', 'run');
+        } else {
+          output.innerHTML = '<p style="color:#888;">尚未提交</p>';
+        }
+      };
+    });
+
+    $('.dev-output-clear').onclick = () => {
+      output.innerHTML = '';
+    };
+
+    // === 输出区拖拽调整 ===
+    const resizer = document.querySelector('.dev-resizer');
+    const outputArea = document.querySelector('.dev-output-area');
+    let drag = false;
+
+    resizer.addEventListener('mousedown', e => {
+      drag = true;
+      document.body.style.userSelect = 'none';
+    });
+
+    document.addEventListener('mousemove', e => {
+      if (!drag) return;
+      const rect = outputArea.getBoundingClientRect();
+      const h = Math.max(60, Math.min(window.innerHeight * 0.7, rect.height + (window.innerHeight - e.clientY)));
+      outputArea.style.height = h + 'px';
+    });
+
+    document.addEventListener('mouseup', () => {
+      drag = false;
+      document.body.style.userSelect = '';
+    });
+
+    // === 题单加载器 ===
+    const typeSel = $('#dev-plist-type');
+    const groupRow = $('#dev-plist-group-row');
+    const catRow = $('#dev-plist-cat-row');
+    const groupSel = $('#dev-plist-group');
+    const catSel = $('#dev-plist-cat');
+    const itemSel = $('#dev-plist-item');
+    const loadBtn = $('#dev-plist-load');
+    const listEl = $('#dev-plist-list');
+
+    typeSel.onchange = () => {
+      const t = typeSel.value;
+      if (t === 'public-training') {
+        groupRow.style.display = 'none';
+        catRow.style.display = '';
+        itemSel.innerHTML = '<option value="">请先选择分类</option>';
+        loadCategories();
+      } else {
+        groupRow.style.display = '';
+        catRow.style.display = 'none';
+        itemSel.innerHTML = '<option value="">请先选择团队</option>';
+        loadGroups();
+      }
+    };
+
+    catSel.onchange = () => {
+      loadTrainings(catSel.value);
+    };
+
+    groupSel.onchange = () => {
+      const gid = groupSel.value;
+      if (!gid) {
+        itemSel.innerHTML = '<option value="">请先选择团队</option>';
+        return;
+      }
+      if (typeSel.value === 'group-contest') {
+        loadContests(gid);
+      } else {
+        loadGroupTrainings(gid);
+      }
+    };
+
+    loadBtn.onclick = () => {
+      const type = typeSel.value;
+      const gid = groupSel.value;
+      const item = itemSel.value;
+      if (type !== 'public-training' && !gid) {
+        alert('请先选择团队');
+        return;
+      }
+      if (!item) {
+        alert('请先选择题单');
+        return;
+      }
+      loadProblemList(type, item, gid);
+    };
+
+    function loadCategories() {
+      catSel.innerHTML = '<option value="">加载中...</option>';
+      // 模拟加载分类
+      setTimeout(() => {
+        catSel.innerHTML = `
+          <option value="">全部</option>
+          <option value="1">入门训练</option>
+          <option value="2">基础算法</option>
+          <option value="3">数据结构</option>
+          <option value="4">动态规划</option>
+          <option value="5">图论</option>
+        `;
+      }, 500);
+    }
+
+    function loadGroups() {
+      groupSel.innerHTML = '<option value="">加载中...</option>';
+      setTimeout(() => {
+        groupSel.innerHTML = `
+          <option value="">-- 请选择团队 --</option>
+          <option value="1">高一竞赛班</option>
+          <option value="2">高二竞赛班</option>
+          <option value="3">NOIP集训队</option>
+        `;
+      }, 500);
+    }
+
+    function loadTrainings(catId) {
+      itemSel.innerHTML = '<option value="">加载中...</option>';
+      setTimeout(() => {
+        const trainings = {
+          '': ['基础入门', '算法进阶', '综合训练'],
+          '1': ['入门练习一', '入门练习二', '入门练习三'],
+          '2': ['排序算法', '贪心算法', '二分查找'],
+          '3': ['链表', '栈和队列', '二叉树'],
+          '4': ['线性DP', '区间DP', '树形DP'],
+          '5': ['最短路径', '最小生成树', '图的遍历']
+        };
+        let html = '<option value="">-- 请选择训练 --</option>';
+        (trainings[catId] || trainings['']).forEach(t => {
+          html += `<option value="${t}">${t}</option>`;
+        });
+        itemSel.innerHTML = html;
+      }, 500);
+    }
+
+    function loadGroupTrainings(gid) {
+      itemSel.innerHTML = '<option value="">加载中...</option>';
+      setTimeout(() => {
+        itemSel.innerHTML = `
+          <option value="">-- 请选择训练 --</option>
+          <option value="t1">团队训练一</option>
+          <option value="t2">团队训练二</option>
+          <option value="t3">团队训练三</option>
+        `;
+      }, 500);
+    }
+
+    function loadContests(gid) {
+      itemSel.innerHTML = '<option value="">加载中...</option>';
+      setTimeout(() => {
+        itemSel.innerHTML = `
+          <option value="">-- 请选择比赛 --</option>
+          <option value="c1">周测一</option>
+          <option value="c2">周测二</option>
+          <option value="c3">模拟赛</option>
+        `;
+      }, 500);
+    }
+
+    function loadProblemList(type, item, gid) {
+      listEl.innerHTML = '<div style="text-align:center;color:#888;padding:20px;">加载中...</div>';
+      setTimeout(() => {
+        const problems = [
+          { displayId: 'P2090', title: '异或修改', ac: true },
+          { displayId: 'P2092', title: '异或与质数', ac: true },
+          { displayId: 'P2093', title: '整数操作', ac: false },
+          { displayId: 'P2094', title: '异或积', ac: false },
+          { displayId: 'P2095', title: '异或和之和', ac: false },
+          { displayId: 'P2096', title: '异或最小', ac: false }
+        ];
+
+        let html = '';
+        problems.forEach((p, i) => {
+          html += `
+            <div class="dev-plist-item" data-i="${i}">
+              <span class="pid">${p.displayId}</span>
+              <span class="ptitle">${p.title}</span>
+              ${p.ac ? '<span class="ac-mark">✓</span>' : ''}
+            </div>
+          `;
+        });
+        listEl.innerHTML = html;
+
+        $('#dev-plist-count').textContent = problems.length + '题';
+
+        $$('.dev-plist-item').forEach(item => {
+          item.onclick = () => {
+            const i = +item.dataset.i;
+            const p = problems[i];
+            loadProblem(p);
+            $$('.dev-plist-item').forEach(x => x.classList.remove('active'));
+            item.classList.add('active');
+          };
+        });
+      }, 800);
+    }
+
+    function loadProblem(p) {
+      const area = $('#dev-problem-area');
+      area.innerHTML = `
+        <h2>${p.title}</h2>
+        <div class="meta">时间限制 1000ms | 内存限制 256MB</div>
+        <h3>题目描述</h3>
+        <p>给定 n 个整数，将这些数全部分配到 a、b 两个数组中，分配规则如下：</p>
+        <ol>
+          <li>所有 5 的倍数必须放入 a 数组；</li>
+          <li>所有 3 的倍数（但不是 5 的倍数）必须放入 b 数组；</li>
+          <li>其余数字可以任意分配到 a 或 b 数组。</li>
+        </ol>
+        <p>判断是否存在一种分配方案，使得：</p>
+        <p>a 数组的元素和 = b 数组的元素和</p>
+        <p>满足输出 <code>true</code>，不满足输出 <code>false</code>。</p>
+        <h3>输入格式</h3>
+        <ol>
+          <li>第一行：一个整数 n (1 ≤ n ≤ 30)</li>
+          <li>第二行：n 个整数 a_i (-500 ≤ a_i ≤ 500)</li>
+        </ol>
+        <h3>输出格式</h3>
+        <p>输出 <code>true</code> 或 <code>false</code></p>
+        <h3>样例 1 输入</h3>
+        <pre>4
+1 5 -5 1</pre>
+        <h3>样例 1 输出</h3>
+        <pre>true</pre>
+      `;
+
+      $('#dev-status-mode').textContent = p.displayId;
+    }
+
+    // === 初始化 ===
+    refreshHighlight();
+    refreshGutter();
+    refreshLnCol();
+    loadCategories();
+  </script>
 </body>
 </html>
