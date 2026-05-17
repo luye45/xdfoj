@@ -1,0 +1,1550 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+  <title>XDFOJ-DevCpp</title>
+  <style>
+    :root {
+      --bg-primary: #ECE9D8;
+      --bg-secondary: #D4D0C8;
+      --bg-white: #FFFFFF;
+      --bg-hover: #C1D2EE;
+      --bg-active: #316AC5;
+      --bg-accent: #0A8043;
+      --bg-warning: #D97706;
+      --text-primary: #000000;
+      --text-secondary: #555555;
+      --text-muted: #888888;
+      --text-white: #FFFFFF;
+      --border-color: #ACA899;
+      --border-dark: #404040;
+      --accent-blue: #0058E1;
+      --accent-green: #0A8043;
+      --accent-red: #C00000;
+      --font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+      --font-mono: "Consolas", "Courier New", monospace;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      font-family: var(--font-family);
+      font-size: 12px;
+      color: var(--text-primary);
+      background: var(--bg-primary);
+      user-select: none;
+    }
+
+    /* === 整体布局 === */
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    /* === 工具栏 === */
+    .toolbar {
+      height: 36px;
+      background: linear-gradient(to bottom, #ECE9D8, #E8E4D8);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      padding: 0 6px;
+      gap: 3px;
+      flex-shrink: 0;
+    }
+
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .toolbar-sep {
+      width: 1px;
+      height: 24px;
+      background: var(--border-color);
+      margin: 0 6px;
+    }
+
+    .toolbar-btn {
+      height: 28px;
+      min-width: 32px;
+      padding: 0 10px;
+      background: transparent;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      cursor: pointer;
+      font-size: 11px;
+      font-family: var(--font-family);
+      color: var(--text-primary);
+      border-radius: 3px;
+      transition: all 0.15s;
+    }
+
+    .toolbar-btn:hover {
+      background: linear-gradient(to bottom, #F5F5DC, #EEE8CD);
+      border-color: #C9B896;
+    }
+
+    .toolbar-btn:active {
+      background: linear-gradient(to bottom, #DDD8C4, #D4CFBA);
+    }
+
+    .toolbar-btn.primary {
+      background: linear-gradient(to bottom, #0A8043, #096A3A);
+      color: var(--text-white);
+      border-color: #096A3A;
+      font-weight: bold;
+    }
+
+    .toolbar-btn.primary:hover {
+      background: linear-gradient(to bottom, #0DAA56, #0A8043);
+    }
+
+    .toolbar-btn.warning {
+      background: linear-gradient(to bottom, #D97706, #B56405);
+      color: var(--text-white);
+      border-color: #B56405;
+      font-weight: bold;
+    }
+
+    .toolbar-btn.warning:hover {
+      background: linear-gradient(to bottom, #EA8A10, #D97706);
+    }
+
+    .toolbar-select {
+      height: 26px;
+      border: 1px solid var(--border-color);
+      font-size: 11px;
+      padding: 0 6px;
+      background: var(--bg-white);
+      font-family: var(--font-family);
+      cursor: pointer;
+    }
+
+    .toolbar-spacer {
+      flex: 1;
+    }
+
+    /* === 主内容区 === */
+    .main-content {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    /* === 左侧面板 - 题单 === */
+    .left-panel {
+      width: 220px;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border-color);
+      background: var(--bg-white);
+      flex-shrink: 0;
+    }
+
+    .panel-header {
+      height: 28px;
+      background: linear-gradient(to bottom, #0058E1, #3A93FF);
+      color: var(--text-white);
+      font-weight: bold;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      gap: 6px;
+    }
+
+    .panel-header .toggle-btn {
+      margin-left: auto;
+      font-size: 10px;
+      opacity: 0.8;
+      cursor: pointer;
+    }
+
+    /* 题单加载器 */
+    .problem-loader {
+      padding: 8px;
+      background: #EEF4FF;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .loader-row {
+      margin-bottom: 6px;
+    }
+
+    .loader-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .loader-row label {
+      display: block;
+      font-size: 10px;
+      color: var(--text-secondary);
+      margin-bottom: 2px;
+    }
+
+    .loader-row select {
+      width: 100%;
+      height: 22px;
+      border: 1px solid var(--border-color);
+      font-size: 11px;
+      padding: 0 4px;
+      background: var(--bg-white);
+    }
+
+    .load-btn {
+      width: 100%;
+      height: 26px;
+      background: linear-gradient(to bottom, #0A8043, #096A3A);
+      color: var(--text-white);
+      border: none;
+      font-weight: bold;
+      font-size: 11px;
+      cursor: pointer;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .load-btn:hover {
+      background: linear-gradient(to bottom, #0DAA56, #0A8043);
+    }
+
+    /* 题单搜索 */
+    .problem-search {
+      padding: 5px 8px;
+      border-bottom: 1px solid var(--border-color);
+      background: #F5F5DC;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .problem-search input {
+      flex: 1;
+      height: 20px;
+      border: 1px solid var(--border-color);
+      font-size: 11px;
+      padding: 0 5px;
+    }
+
+    .problem-search .count {
+      font-size: 10px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* 题单列表 */
+    .problem-list {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .problem-item {
+      padding: 6px 10px;
+      cursor: pointer;
+      border-bottom: 1px dotted #DDD;
+      font-size: 11px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      transition: background 0.15s;
+    }
+
+    .problem-item:hover {
+      background: var(--bg-hover);
+    }
+
+    .problem-item.active {
+      background: var(--bg-active);
+      color: var(--text-white);
+    }
+
+    .problem-item .pid {
+      color: var(--accent-blue);
+      font-weight: bold;
+      font-family: var(--font-mono);
+      min-width: 50px;
+      flex-shrink: 0;
+    }
+
+    .problem-item.active .pid {
+      color: var(--text-white);
+    }
+
+    .problem-item .ptitle {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+      white-space: nowrap;
+    }
+
+    .problem-item .ac-mark {
+      color: var(--accent-green);
+      font-weight: bold;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    .problem-item.active .ac-mark {
+      color: #90EE90;
+    }
+
+    /* === 中间面板 - 题目描述 === */
+    .center-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      background: var(--bg-white);
+    }
+
+    .center-tabs {
+      height: 26px;
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: flex-end;
+      padding: 0 4px;
+      flex-shrink: 0;
+    }
+
+    .center-tab {
+      padding: 4px 14px;
+      border: 1px solid var(--border-color);
+      border-bottom: none;
+      background: var(--bg-secondary);
+      cursor: pointer;
+      font-size: 11px;
+      margin: 2px 2px 0 0;
+      border-radius: 4px 4px 0 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .center-tab.on {
+      background: var(--bg-white);
+      font-weight: bold;
+      border-bottom: 1px solid var(--bg-white);
+      margin-bottom: -1px;
+    }
+
+    /* 题目内容区 */
+    .problem-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px;
+      font-family: "Times New Roman", "SimSun", serif;
+      line-height: 1.8;
+      color: var(--text-primary);
+      background: var(--bg-white);
+    }
+
+    .problem-area h2 {
+      font-size: 1.4em;
+      margin: 0 0 10px;
+      color: #000080;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 6px;
+    }
+
+    .problem-area h3 {
+      font-size: 1.1em;
+      margin: 16px 0 8px;
+      color: #000080;
+      border-left: 4px solid var(--accent-blue);
+      padding-left: 10px;
+      background: #F0F4FA;
+    }
+
+    .problem-area .meta {
+      color: var(--text-secondary);
+      font-size: 0.85em;
+      margin-bottom: 10px;
+      background: #F5F5DC;
+      padding: 5px 10px;
+      border-radius: 3px;
+      display: flex;
+      gap: 15px;
+    }
+
+    .problem-area pre {
+      background: #FFFBE6;
+      border: 1px solid #E0D070;
+      padding: 10px 12px;
+      font-family: var(--font-mono);
+      font-size: 0.92em;
+      white-space: pre-wrap;
+      overflow: auto;
+      border-radius: 3px;
+    }
+
+    .problem-area code {
+      background: #FFF3CD;
+      padding: 1px 5px;
+      border-radius: 2px;
+      font-family: var(--font-mono);
+    }
+
+    .problem-area p {
+      margin: 8px 0;
+    }
+
+    .problem-area ol, .problem-area ul {
+      margin: 8px 0;
+      padding-left: 25px;
+    }
+
+    .problem-area li {
+      margin: 4px 0;
+    }
+
+    .problem-empty {
+      color: var(--text-muted);
+      text-align: center;
+      padding: 60px 20px;
+      font-size: 13px;
+    }
+
+    /* === 右侧面板 - 代码编辑器 === */
+    .right-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 400px;
+    }
+
+    /* 文件标签 */
+    .file-tabs {
+      height: 28px;
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: flex-end;
+      padding: 0 4px;
+      flex-shrink: 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+
+    .file-tab {
+      height: 24px;
+      padding: 0 12px;
+      border: 1px solid var(--border-color);
+      border-bottom: none;
+      background: var(--bg-secondary);
+      cursor: pointer;
+      font-size: 11px;
+      margin: 2px 2px 0 0;
+      border-radius: 4px 4px 0 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .file-tab.on {
+      background: var(--bg-white);
+      font-weight: bold;
+      border-bottom: 1px solid var(--bg-white);
+      margin-bottom: -1px;
+      z-index: 1;
+    }
+
+    .file-tab .close-btn {
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 1px 4px;
+      font-size: 10px;
+      border-radius: 2px;
+    }
+
+    .file-tab .close-btn:hover {
+      color: var(--accent-red);
+      background: #FFB8B8;
+    }
+
+    .file-tab.add {
+      background: transparent;
+      padding: 0 8px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    /* 编辑器区域 */
+    .editor-container {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+      position: relative;
+      background: var(--bg-white);
+    }
+
+    .line-numbers {
+      width: 50px;
+      background: var(--bg-primary);
+      border-right: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      text-align: right;
+      padding: 5px 8px 5px 0;
+      overflow: hidden;
+      user-select: none;
+      flex-shrink: 0;
+      line-height: 1.5;
+    }
+
+    .editor-wrapper {
+      flex: 1;
+      position: relative;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .code-highlight,
+    .code-editor {
+      position: absolute;
+      inset: 0;
+      margin: 0;
+      padding: 5px 10px;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      line-height: 1.5;
+      tab-size: 4;
+      border: none;
+      outline: none;
+      white-space: pre;
+      overflow: auto;
+      box-sizing: border-box;
+    }
+
+    .code-highlight {
+      color: var(--text-primary);
+      background: var(--bg-white);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .code-editor {
+      color: transparent;
+      caret-color: var(--text-primary);
+      background: transparent;
+      resize: none;
+      z-index: 2;
+    }
+
+    .code-editor::selection {
+      background: var(--bg-active);
+      color: var(--text-white);
+    }
+
+    /* 语法高亮样式 */
+    .kw { color: #0000FF; font-weight: bold; }
+    .tp { color: #0000C0; }
+    .st { color: #A31515; }
+    .cm { color: #008000; font-style: italic; }
+    .nm { color: #098658; }
+    .fn { color: #795E26; }
+    .pp { color: #A52A2A; font-weight: bold; }
+
+    /* 分隔条 */
+    .resizer {
+      height: 5px;
+      background: var(--border-color);
+      cursor: ns-resize;
+      flex-shrink: 0;
+    }
+
+    .resizer:hover {
+      background: var(--accent-blue);
+    }
+
+    /* 输出区域 */
+    .output-area {
+      height: 200px;
+      background: var(--bg-white);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .output-header {
+      height: 26px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      font-weight: bold;
+      font-size: 11px;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .output-tab {
+      padding: 3px 12px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      border-radius: 2px;
+    }
+
+    .output-tab.on {
+      background: var(--bg-white);
+      border: 1px solid var(--border-color);
+      border-bottom-color: var(--bg-white);
+    }
+
+    .output-clear {
+      margin-left: auto;
+      cursor: pointer;
+      padding: 2px 10px;
+      opacity: 0.8;
+    }
+
+    .output-clear:hover {
+      opacity: 1;
+      background: var(--bg-hover);
+    }
+
+    .output-body {
+      flex: 1;
+      overflow: auto;
+      padding: 8px 12px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      white-space: pre-wrap;
+      background: var(--bg-white);
+    }
+
+    .output-body .ok { color: var(--accent-green); font-weight: bold; }
+    .output-body .err { color: var(--accent-red); font-weight: bold; }
+    .output-body .run { color: var(--accent-blue); }
+    .output-body .ts { color: var(--text-muted); font-size: 11px; }
+
+    /* === 状态栏 === */
+    .statusbar {
+      height: 24px;
+      background: linear-gradient(to bottom, #ECE9D8, #E8E4D8);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      gap: 16px;
+      flex-shrink: 0;
+    }
+
+    .statusbar .seg {
+      border-right: 1px solid var(--border-color);
+      padding-right: 16px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .statusbar .seg:last-child {
+      border-right: none;
+      padding-right: 0;
+    }
+
+    .statusbar b {
+      color: var(--text-primary);
+    }
+
+    /* === 响应式 === */
+    @media (max-width: 1200px) {
+      .left-panel {
+        width: 180px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .left-panel {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- 工具栏 -->
+    <div class="toolbar">
+      <div class="toolbar-group">
+        <button class="toolbar-btn" id="btn-new" title="新建 Ctrl+N">
+          <span>📄</span>
+        </button>
+        <button class="toolbar-btn" id="btn-open" title="打开 Ctrl+O">
+          <span>📂</span>
+        </button>
+        <button class="toolbar-btn" id="btn-save" title="保存 Ctrl+S">
+          <span>💾</span>
+        </button>
+      </div>
+
+      <div class="toolbar-sep"></div>
+
+      <div class="toolbar-group">
+        <button class="toolbar-btn" id="btn-compile" title="编译 F9">
+          <span>⚙</span> 编译
+        </button>
+        <button class="toolbar-btn primary" id="btn-run" title="运行 F10">
+          <span>▶</span> 运行
+        </button>
+      </div>
+
+      <div class="toolbar-sep"></div>
+
+      <div class="toolbar-group">
+        <button class="toolbar-btn warning" id="btn-submit" title="提交 F11">
+          <span>📤</span> 提交
+        </button>
+      </div>
+
+      <div class="toolbar-sep"></div>
+
+      <select class="toolbar-select" id="lang-select">
+        <option value="C++ With O2">C++ With O2</option>
+        <option value="C++">C++</option>
+        <option value="Python3">Python3</option>
+        <option value="Java">Java</option>
+        <option value="C">C</option>
+      </select>
+
+      <div class="toolbar-spacer"></div>
+
+      <button class="toolbar-btn" id="btn-login" title="登录">
+        <span>👤</span> 登录
+      </button>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main-content">
+      <!-- 左侧面板 - 题单 -->
+      <div class="left-panel">
+        <div class="panel-header">
+          <span>📋</span> 题单
+          <span class="toggle-btn" id="plist-toggle">▼</span>
+        </div>
+
+        <div class="problem-loader" id="problem-loader">
+          <div class="loader-row">
+            <label>类型</label>
+            <select id="plist-type">
+              <option value="public">公共训练</option>
+              <option value="group">团队训练</option>
+              <option value="contest">团队比赛</option>
+            </select>
+          </div>
+          <div class="loader-row" id="group-row" style="display:none;">
+            <label>团队</label>
+            <select id="plist-group">
+              <option value="">-- 请选择 --</option>
+            </select>
+          </div>
+          <div class="loader-row" id="cat-row">
+            <label>分类</label>
+            <select id="plist-cat">
+              <option value="">全部</option>
+              <option value="1">入门训练</option>
+              <option value="2">基础算法</option>
+              <option value="3">数据结构</option>
+              <option value="4">动态规划</option>
+              <option value="5">图论</option>
+            </select>
+          </div>
+          <div class="loader-row">
+            <label>题单</label>
+            <select id="plist-item">
+              <option value="">-- 请选择 --</option>
+              <option value="basic">基础入门</option>
+              <option value="algo">算法进阶</option>
+              <option value="comprehensive">综合训练</option>
+            </select>
+          </div>
+          <div class="loader-row">
+            <button class="load-btn" id="btn-load-problems">
+              <span>▶</span> 加载题目
+            </button>
+          </div>
+        </div>
+
+        <div class="problem-search">
+          <input type="text" placeholder="搜索题目..." id="problem-search-input">
+          <span class="count" id="problem-count">未加载</span>
+        </div>
+
+        <div class="problem-list" id="problem-list">
+          <div class="problem-item">
+            <span class="pid">P2090</span>
+            <span class="ptitle">异或修改</span>
+            <span class="ac-mark">✓</span>
+          </div>
+          <div class="problem-item">
+            <span class="pid">P2092</span>
+            <span class="ptitle">异或与质数</span>
+            <span class="ac-mark">✓</span>
+          </div>
+          <div class="problem-item">
+            <span class="pid">P2093</span>
+            <span class="ptitle">整数操作</span>
+          </div>
+          <div class="problem-item">
+            <span class="pid">P2094</span>
+            <span class="ptitle">异或积</span>
+          </div>
+          <div class="problem-item">
+            <span class="pid">P2095</span>
+            <span class="ptitle">异或和之和</span>
+          </div>
+          <div class="problem-item">
+            <span class="pid">P2096</span>
+            <span class="ptitle">异或最小</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 中间面板 - 题目描述 -->
+      <div class="center-panel">
+        <div class="center-tabs">
+          <div class="center-tab" data-tab="desc">简介</div>
+          <div class="center-tab on" data-tab="prob">题目描述</div>
+        </div>
+
+        <div class="problem-area" id="problem-area">
+          <h2>异或修改</h2>
+          <div class="meta">
+            <span>时间限制: 1000ms</span>
+            <span>内存限制: 256MB</span>
+            <span>难度: 中等</span>
+          </div>
+
+          <h3>题目描述</h3>
+          <p>给定 n 个整数，将这些数全部分配到 a、b 两个数组中，分配规则如下：</p>
+          <ol>
+            <li>所有 5 的倍数必须放入 a 数组；</li>
+            <li>所有 3 的倍数（但不是 5 的倍数）必须放入 b 数组；</li>
+            <li>其余数字可以任意分配到 a 或 b 数组。</li>
+          </ol>
+          <p>判断是否存在一种分配方案，使得：</p>
+          <p>a 数组的元素和 = b 数组的元素和</p>
+          <p>满足输出 <code>true</code>，不满足输出 <code>false</code>。</p>
+
+          <h3>输入格式</h3>
+          <p>第一行：一个整数 n (1 ≤ n ≤ 30)</p>
+          <p>第二行：n 个整数 a_i (-500 ≤ a_i ≤ 500)</p>
+
+          <h3>输出格式</h3>
+          <p>输出 <code>true</code> 或 <code>false</code></p>
+
+          <h3>样例 1</h3>
+          <pre>输入:
+4
+1 5 -5 1
+
+输出:
+true</pre>
+
+          <h3>样例 2</h3>
+          <pre>输入:
+2
+3 5
+
+输出:
+false</pre>
+
+          <h3>提示</h3>
+          <p>本题可以通过搜索或动态规划求解。</p>
+        </div>
+      </div>
+
+      <!-- 右侧面板 - 代码编辑器 -->
+      <div class="right-panel">
+        <div class="file-tabs" id="file-tabs">
+          <div class="file-tab on" data-index="0">
+            <span>main.cpp</span>
+            <span class="close-btn" data-close="0">✕</span>
+          </div>
+          <div class="file-tab add" id="btn-add-tab">+</div>
+        </div>
+
+        <div class="editor-container">
+          <div class="line-numbers" id="line-numbers">1</div>
+          <div class="editor-wrapper">
+            <pre class="code-highlight" id="code-highlight"></pre>
+            <textarea class="code-editor" id="code-editor" spellcheck="false"></textarea>
+          </div>
+        </div>
+
+        <div class="resizer" id="output-resizer"></div>
+
+        <div class="output-area" id="output-area">
+          <div class="output-header">
+            <span class="output-tab on" data-output="run">运行</span>
+            <span class="output-tab" data-output="result">结果</span>
+            <span class="output-clear" id="btn-clear-output">[ 清除 ]</span>
+          </div>
+          <div class="output-body" id="output-body">
+            <span class="ts">[系统]</span> <span class="run">XDFOJ-DevCpp 已就绪</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 状态栏 -->
+    <div class="statusbar">
+      <span class="seg">行: <b id="cur-line">1</b>  列: <b id="cur-col">1</b></span>
+      <span class="seg" id="cur-problem">P2090 - 异或修改</span>
+      <span class="seg" id="cur-lang">C++ With O2</span>
+      <span class="seg">UTF-8</span>
+      <span id="status-msg">就绪</span>
+    </div>
+  </div>
+
+  <script>
+    // === 全局变量 ===
+    const files = [];
+    let activeFileIndex = 0;
+    let currentProblem = null;
+
+    // === DOM 元素 ===
+    const codeEditor = document.getElementById('code-editor');
+    const codeHighlight = document.getElementById('code-highlight');
+    const lineNumbers = document.getElementById('line-numbers');
+    const outputBody = document.getElementById('output-body');
+    const langSelect = document.getElementById('lang-select');
+
+    // === 代码模板 ===
+    function getTemplate(lang) {
+      lang = lang || 'C++ With O2';
+      if (lang.includes('Python')) {
+        return '# Python 代码';
+      }
+      if (lang.includes('Java')) {
+        return `import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+    }
+}`;
+      }
+      if (lang === 'C') {
+        return `#include <stdio.h>
+
+int main() {
+    return 0;
+}`;
+      }
+      return `#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+    
+    return 0;
+}`;
+    }
+
+    // === 语法高亮 ===
+    const CPP_KEYWORDS = new Set(['if', 'else', 'for', 'while', 'do', 'return', 'break', 'continue', 'switch', 'case', 'default', 'goto', 'typedef', 'struct', 'class', 'public', 'private', 'protected', 'virtual', 'override', 'template', 'typename', 'namespace', 'using', 'new', 'delete', 'try', 'catch', 'throw', 'const', 'static', 'extern', 'inline', 'friend', 'operator', 'this', 'auto', 'register', 'volatile', 'sizeof', 'true', 'false', 'nullptr', 'NULL', 'include', 'define']);
+    const CPP_TYPES = new Set(['int', 'long', 'short', 'char', 'float', 'double', 'void', 'bool', 'signed', 'unsigned', 'string', 'vector', 'map', 'set', 'queue', 'stack', 'deque', 'list', 'pair', 'size_t', 'FILE', 'main']);
+    const PY_KEYWORDS = new Set(['def', 'return', 'if', 'elif', 'else', 'for', 'while', 'break', 'continue', 'import', 'from', 'as', 'class', 'try', 'except', 'finally', 'raise', 'with', 'pass', 'lambda', 'yield', 'global', 'nonlocal', 'in', 'is', 'not', 'and', 'or', 'True', 'False', 'None', 'print', 'input', 'range', 'len', 'int', 'str', 'float', 'list', 'dict', 'set', 'tuple']);
+
+    function highlightCode(code, lang) {
+      const isPython = /Python/i.test(lang);
+      const isJava = /Java/i.test(lang);
+      const KEYWORDS = isPython ? PY_KEYWORDS : (isJava ? CPP_KEYWORDS : CPP_KEYWORDS);
+      const TYPES = isPython || isJava ? null : CPP_TYPES;
+      
+      let html = '';
+      let i = 0, n = code.length;
+      
+      while (i < n) {
+        const c = code[i];
+        
+        // 注释
+        if (!isPython && c === '/' && code[i + 1] === '/') {
+          let j = code.indexOf('\n', i);
+          j = j === -1 ? n : j;
+          html += '<span class="cm">' + escapeHtml(code.slice(i, j)) + '</span>';
+          i = j;
+          continue;
+        }
+        
+        if (isPython && c === '#') {
+          let j = code.indexOf('\n', i);
+          j = j === -1 ? n : j;
+          html += '<span class="cm">' + escapeHtml(code.slice(i, j)) + '</span>';
+          i = j;
+          continue;
+        }
+        
+        // 字符串
+        if (c === '"' || c === "'" || c === '`') {
+          const endChar = c;
+          let j = i + 1;
+          while (j < n && code[j] !== endChar) {
+            if (code[j] === '\\') j++;
+            j++;
+          }
+          j = Math.min(j + 1, n);
+          html += '<span class="st">' + escapeHtml(code.slice(i, j)) + '</span>';
+          i = j;
+          continue;
+        }
+        
+        // 预处理指令
+        if (!isPython && !isJava && c === '#') {
+          let j = code.indexOf('\n', i);
+          j = j === -1 ? n : j;
+          html += '<span class="pp">' + escapeHtml(code.slice(i, j)) + '</span>';
+          i = j;
+          continue;
+        }
+        
+        // 数字
+        if (/[0-9]/.test(c) && (i === 0 || !/[A-Za-z_]/.test(code[i - 1]))) {
+          let j = i;
+          while (j < n && /[0-9.xXa-fA-F]/.test(code[j])) j++;
+          html += '<span class="nm">' + escapeHtml(code.slice(i, j)) + '</span>';
+          i = j;
+          continue;
+        }
+        
+        // 标识符和关键字
+        if (/[A-Za-z_]/.test(c)) {
+          let j = i;
+          while (j < n && /[A-Za-z0-9_]/.test(code[j])) j++;
+          const word = code.slice(i, j);
+          
+          if (KEYWORDS.has(word)) {
+            html += '<span class="kw">' + escapeHtml(word) + '</span>';
+          } else if (TYPES && TYPES.has(word)) {
+            html += '<span class="tp">' + escapeHtml(word) + '</span>';
+          } else if (code[j] === '(') {
+            html += '<span class="fn">' + escapeHtml(word) + '</span>';
+          } else {
+            html += escapeHtml(word);
+          }
+          i = j;
+          continue;
+        }
+        
+        html += escapeHtml(c);
+        i++;
+      }
+      
+      return html;
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/[&<>"']/g, m => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[m]));
+    }
+
+    // === 编辑器更新 ===
+    function updateHighlight() {
+      const code = codeEditor.value;
+      const lang = files[activeFileIndex]?.lang || 'C++ With O2';
+      codeHighlight.innerHTML = highlightCode(code, lang) + '\n';
+    }
+
+    function updateLineNumbers() {
+      const lines = codeEditor.value.split('\n').length;
+      lineNumbers.innerHTML = Array.from({ length: lines }, (_, i) => i + 1).join('<br>');
+    }
+
+    function updateCursorPosition() {
+      const code = codeEditor.value;
+      const pos = codeEditor.selectionStart;
+      const before = code.slice(0, pos);
+      const line = before.split('\n').length;
+      const col = pos - before.lastIndexOf('\n');
+      
+      document.getElementById('cur-line').textContent = line;
+      document.getElementById('cur-col').textContent = col;
+    }
+
+    // === 事件监听 ===
+    codeEditor.addEventListener('input', () => {
+      if (files[activeFileIndex]) {
+        files[activeFileIndex].code = codeEditor.value;
+      }
+      updateHighlight();
+      updateLineNumbers();
+      updateCursorPosition();
+    });
+
+    codeEditor.addEventListener('scroll', () => {
+      lineNumbers.scrollTop = codeEditor.scrollTop;
+      codeHighlight.scrollTop = codeEditor.scrollTop;
+      codeHighlight.scrollLeft = codeEditor.scrollLeft;
+    });
+
+    codeEditor.addEventListener('click', updateCursorPosition);
+    codeEditor.addEventListener('keyup', updateCursorPosition);
+
+    // Tab 缩进
+    codeEditor.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const start = codeEditor.selectionStart;
+        const end = codeEditor.selectionEnd;
+        const value = codeEditor.value;
+        
+        if (start !== end) {
+          const before = value.slice(0, start);
+          const after = value.slice(end);
+          const selected = value.slice(start, end);
+          const indented = selected.split('\n').map(line => '    ' + line).join('\n');
+          codeEditor.value = before + indented + after;
+          codeEditor.selectionStart = start;
+          codeEditor.selectionEnd = start + indented.length;
+        } else {
+          codeEditor.value = value.slice(0, start) + '    ' + value.slice(end);
+          codeEditor.selectionStart = codeEditor.selectionEnd = start + 4;
+        }
+        
+        files[activeFileIndex].code = codeEditor.value;
+        updateHighlight();
+        updateLineNumbers();
+      }
+      
+      // 括号自动配对
+      if (['{', '(', '[', '"', "'"].includes(e.key)) {
+        const pairs = { '{': '}', '(': ')', '[': ']', '"': '"', "'": "'" };
+        const start = codeEditor.selectionStart;
+        const end = codeEditor.selectionEnd;
+        
+        if (start === end) {
+          e.preventDefault();
+          const value = codeEditor.value;
+          codeEditor.value = value.slice(0, start) + e.key + pairs[e.key] + value.slice(end);
+          codeEditor.selectionStart = codeEditor.selectionEnd = start + 1;
+          files[activeFileIndex].code = codeEditor.value;
+          updateHighlight();
+        }
+      }
+    });
+
+    // 语言切换
+    langSelect.addEventListener('change', (e) => {
+      const lang = e.target.value;
+      if (files[activeFileIndex]) {
+        files[activeFileIndex].lang = lang;
+        updateHighlight();
+      }
+      document.getElementById('cur-lang').textContent = lang;
+    });
+
+    // === 文件管理 ===
+    function initFiles() {
+      files.push({
+        id: Date.now().toString(),
+        name: 'main.cpp',
+        code: getTemplate('C++ With O2'),
+        lang: 'C++ With O2',
+        path: null
+      });
+      codeEditor.value = files[0].code;
+    }
+
+    function renderFileTabs() {
+      const tabs = document.getElementById('file-tabs');
+      let html = '';
+      
+      files.forEach((file, index) => {
+        const active = index === activeFileIndex ? ' on' : '';
+        html += `
+          <div class="file-tab${active}" data-index="${index}">
+            <span>${file.name}</span>
+            <span class="close-btn" data-close="${index}">✕</span>
+          </div>
+        `;
+      });
+      
+      html += '<div class="file-tab add" id="btn-add-tab">+</div>';
+      tabs.innerHTML = html;
+      
+      // 重新绑定事件
+      tabs.querySelectorAll('.file-tab[data-index]').forEach(tab => {
+        tab.addEventListener('click', (e) => {
+          if (e.target.classList.contains('close-btn')) return;
+          switchFile(parseInt(tab.dataset.index));
+        });
+      });
+      
+      tabs.querySelectorAll('.close-btn[data-close]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          closeFile(parseInt(btn.dataset.close));
+        });
+      });
+      
+      document.getElementById('btn-add-tab').addEventListener('click', newFile);
+    }
+
+    function switchFile(index) {
+      if (index < 0 || index >= files.length) return;
+      
+      // 保存当前文件
+      files[activeFileIndex].code = codeEditor.value;
+      
+      activeFileIndex = index;
+      const file = files[activeFileIndex];
+      
+      codeEditor.value = file.code;
+      langSelect.value = file.lang;
+      
+      updateHighlight();
+      updateLineNumbers();
+      updateCursorPosition();
+      renderFileTabs();
+    }
+
+    function newFile() {
+      files[activeFileIndex].code = codeEditor.value;
+      
+      const newFile = {
+        id: Date.now().toString(),
+        name: 'newfile.cpp',
+        code: getTemplate(files[activeFileIndex]?.lang || 'C++ With O2'),
+        lang: files[activeFileIndex]?.lang || 'C++ With O2',
+        path: null
+      };
+      
+      files.push(newFile);
+      activeFileIndex = files.length - 1;
+      
+      codeEditor.value = newFile.code;
+      langSelect.value = newFile.lang;
+      
+      updateHighlight();
+      updateLineNumbers();
+      updateCursorPosition();
+      renderFileTabs();
+    }
+
+    function closeFile(index) {
+      if (files.length <= 1) return;
+      
+      files.splice(index, 1);
+      
+      if (activeFileIndex >= files.length) {
+        activeFileIndex = files.length - 1;
+      } else if (activeFileIndex > index) {
+        activeFileIndex--;
+      }
+      
+      codeEditor.value = files[activeFileIndex].code;
+      langSelect.value = files[activeFileIndex].lang;
+      
+      updateHighlight();
+      updateLineNumbers();
+      updateCursorPosition();
+      renderFileTabs();
+    }
+
+    // === 输出函数 ===
+    function appendOutput(text, type = '') {
+      const time = new Date().toLocaleTimeString();
+      outputBody.innerHTML += `<div><span class="ts">[${time}]</span> <span class="${type}">${text}</span></div>`;
+      outputBody.scrollTop = outputBody.scrollHeight;
+    }
+
+    // === 工具栏按钮 ===
+    document.getElementById('btn-new').addEventListener('click', newFile);
+
+    document.getElementById('btn-open').addEventListener('click', async () => {
+      if (window.electronAPI) {
+        const result = await window.electronAPI.showOpenDialog();
+        if (!result.canceled && result.filePaths.length > 0) {
+          const filePath = result.filePaths[0];
+          const fileResult = await window.electronAPI.readFile(filePath);
+          if (fileResult.success) {
+            const ext = filePath.split('.').pop().toLowerCase();
+            const lang = ext === 'py' ? 'Python3' : ext === 'java' ? 'Java' : ext === 'c' ? 'C' : 'C++ With O2';
+            
+            files.push({
+              id: Date.now().toString(),
+              name: filePath.split(/[/\\]/).pop(),
+              code: fileResult.content,
+              lang: lang,
+              path: filePath
+            });
+            
+            activeFileIndex = files.length - 1;
+            codeEditor.value = fileResult.content;
+            langSelect.value = lang;
+            
+            updateHighlight();
+            updateLineNumbers();
+            renderFileTabs();
+            appendOutput('已打开: ' + filePath.split(/[/\\]/).pop(), 'ok');
+          }
+        }
+      } else {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.cpp,.c,.cc,.cxx,.py,.java,.txt';
+        input.onchange = (e) => {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const ext = file.name.split('.').pop().toLowerCase();
+              const lang = ext === 'py' ? 'Python3' : ext === 'java' ? 'Java' : ext === 'c' ? 'C' : 'C++ With O2';
+              
+              files.push({
+                id: Date.now().toString(),
+                name: file.name,
+                code: e.target.result,
+                lang: lang,
+                path: null
+              });
+              
+              activeFileIndex = files.length - 1;
+              codeEditor.value = e.target.result;
+              langSelect.value = lang;
+              
+              updateHighlight();
+              updateLineNumbers();
+              renderFileTabs();
+              appendOutput('已打开: ' + file.name, 'ok');
+            };
+            reader.readAsText(file);
+          }
+        };
+        input.click();
+      }
+    });
+
+    document.getElementById('btn-save').addEventListener('click', async () => {
+      const file = files[activeFileIndex];
+      file.code = codeEditor.value;
+      
+      if (window.electronAPI) {
+        if (file.path) {
+          const result = await window.electronAPI.writeFile(file.path, file.code);
+          if (result.success) {
+            appendOutput('已保存: ' + file.name, 'ok');
+          } else {
+            appendOutput('保存失败: ' + result.error, 'err');
+          }
+        } else {
+          window.electronAPI.saveFile(file.code, null);
+        }
+      } else {
+        // 浏览器环境
+        const blob = new Blob([file.code], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.name;
+        a.click();
+        URL.revokeObjectURL(url);
+        appendOutput('已保存到本地: ' + file.name, 'ok');
+      }
+    });
+
+    document.getElementById('btn-compile').addEventListener('click', () => {
+      appendOutput('正在编译...', 'run');
+      setTimeout(() => {
+        appendOutput('✓ 编译成功', 'ok');
+      }, 800);
+    });
+
+    document.getElementById('btn-run').addEventListener('click', () => {
+      appendOutput('正在运行...', 'run');
+      setTimeout(() => {
+        appendOutput('✓ 运行完成', 'ok');
+      }, 1000);
+    });
+
+    document.getElementById('btn-submit').addEventListener('click', () => {
+      appendOutput('正在提交...', 'run');
+      setTimeout(() => {
+        appendOutput('✓ 提交成功，等待评测结果...', 'ok');
+      }, 1200);
+    });
+
+    document.getElementById('btn-login').addEventListener('click', () => {
+      appendOutput('请在浏览器中打开 XDFOJ 登录', 'run');
+    });
+
+    document.getElementById('btn-clear-output').addEventListener('click', () => {
+      outputBody.innerHTML = '<span class="ts">[系统]</span> <span class="run">输出已清除</span>';
+    });
+
+    // === 输出区域拖拽调整 ===
+    const outputArea = document.getElementById('output-area');
+    const resizer = document.getElementById('output-resizer');
+    let isResizing = false;
+
+    resizer.addEventListener('mousedown', (e) => {
+      isResizing = true;
+      document.body.style.cursor = 'ns-resize';
+      document.body.style.userSelect = 'none';
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isResizing) return;
+      const rect = outputArea.getBoundingClientRect();
+      const newHeight = window.innerHeight - e.clientY;
+      if (newHeight > 60 && newHeight < window.innerHeight * 0.7) {
+        outputArea.style.height = newHeight + 'px';
+      }
+    });
+
+    document.addEventListener('mouseup', () => {
+      isResizing = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    });
+
+    // === 题单功能 ===
+    document.getElementById('btn-load-problems').addEventListener('click', () => {
+      appendOutput('正在加载题目列表...', 'run');
+      setTimeout(() => {
+        appendOutput('✓ 题目列表已加载 (6题)', 'ok');
+      }, 500);
+    });
+
+    document.getElementById('plist-type').addEventListener('change', (e) => {
+      const type = e.target.value;
+      const groupRow = document.getElementById('group-row');
+      const catRow = document.getElementById('cat-row');
+      
+      if (type === 'group' || type === 'contest') {
+        groupRow.style.display = '';
+        catRow.style.display = 'none';
+      } else {
+        groupRow.style.display = 'none';
+        catRow.style.display = '';
+      }
+    });
+
+    document.getElementById('problem-list').addEventListener('click', (e) => {
+      const item = e.target.closest('.problem-item');
+      if (!item) return;
+      
+      document.querySelectorAll('.problem-item').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+      
+      const pid = item.querySelector('.pid').textContent;
+      const title = item.querySelector('.ptitle').textContent;
+      const isAc = item.querySelector('.ac-mark');
+      
+      document.getElementById('cur-problem').textContent = `${pid} - ${title}`;
+      appendOutput(`已选择题目: ${pid} ${title}${isAc ? ' ✓' : ''}`, 'run');
+    });
+
+    // === 输出标签切换 ===
+    document.querySelectorAll('.output-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.output-tab').forEach(t => t.classList.remove('on'));
+        tab.classList.add('on');
+        
+        if (tab.dataset.output === 'result') {
+          outputBody.innerHTML = '<span class="ts">[系统]</span> <span class="run">尚未提交代码</span>';
+        } else {
+          outputBody.innerHTML = '<span class="ts">[系统]</span> <span class="run">XDFOJ-DevCpp 已就绪</span>';
+        }
+      });
+    });
+
+    // === Electron IPC 事件 ===
+    if (window.electronAPI) {
+      window.electronAPI.onMenuAction((action) => {
+        switch (action) {
+          case 'new': newFile(); break;
+          case 'save': document.getElementById('btn-save').click(); break;
+          case 'compile': document.getElementById('btn-compile').click(); break;
+          case 'run': document.getElementById('btn-run').click(); break;
+          case 'submit': document.getElementById('btn-submit').click(); break;
+        }
+      });
+
+      window.electronAPI.onFileOpened((data) => {
+        files.push({
+          id: Date.now().toString(),
+          name: data.path.split(/[/\\]/).pop(),
+          code: data.content,
+          lang: data.path.endsWith('.py') ? 'Python3' : data.path.endsWith('.java') ? 'Java' : data.path.endsWith('.c') ? 'C' : 'C++ With O2',
+          path: data.path
+        });
+        activeFileIndex = files.length - 1;
+        codeEditor.value = data.content;
+        langSelect.value = files[activeFileIndex].lang;
+        updateHighlight();
+        updateLineNumbers();
+        renderFileTabs();
+        appendOutput('已打开: ' + files[activeFileIndex].name, 'ok');
+      });
+
+      window.electronAPI.onFileSaved((data) => {
+        if (data.success) {
+          appendOutput('已保存: ' + data.path, 'ok');
+        } else {
+          appendOutput('保存失败: ' + data.error, 'err');
+        }
+      });
+    }
+
+    // === 初始化 ===
+    initFiles();
+    updateHighlight();
+    updateLineNumbers();
+    updateCursorPosition();
+    renderFileTabs();
+
+    // 键盘快捷键
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        document.getElementById('btn-save').click();
+      }
+      if (e.key === 'F9') {
+        e.preventDefault();
+        document.getElementById('btn-compile').click();
+      }
+      if (e.key === 'F10') {
+        e.preventDefault();
+        document.getElementById('btn-run').click();
+      }
+      if (e.key === 'F11') {
+        e.preventDefault();
+        document.getElementById('btn-submit').click();
+      }
+    });
+
+    console.log('XDFOJ-DevCpp initialized successfully');
+  </script>
+</body>
+</html>
